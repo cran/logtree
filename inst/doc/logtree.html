@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>logtree</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">logtree</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(logtree)</span></code></pre></div>
+<p>logtree renders nested process execution as a live, colored tree in
+the console: tree connectors, status glyphs, and elapsed time per step.
+Nesting depth is tracked via frame-exit handlers, so it never
+desynchronizes, even when a step errors partway through.</p>
+<div id="basic-nesting" class="section level2">
+<h2>Basic nesting</h2>
+<p><code>log_step()</code> opens a step and automatically closes it when
+the calling function returns – normally, via an early
+<code>return()</code>, or because an error propagated through it.
+Nesting composes for free: a step opened inside another step is
+automatically indented one level deeper, with no coordination needed
+between the two functions.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>load_config <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Load config&quot;</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;Reading config.yml&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;Validated 12 parameters&quot;</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>}</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>pipeline <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Pipeline&quot;</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="fu">load_config</span>()</span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>}</span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ Reading config.yml</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ Validated 12 parameters</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+</div>
+<div id="leaf-lines-and-status-elevation" class="section level2">
+<h2>Leaf lines and status elevation</h2>
+<p><code>log_info()</code> and <code>log_success()</code> are plain leaf
+lines. <code>log_warn()</code> and <code>log_error()</code> additionally
+elevate the <em>enclosing</em> step’s status, so its close line renders
+the elevated glyph even though the function that opened it returns
+normally.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>fetch_articles <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Fetching articles&quot;</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;Connecting to API&quot;</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="fu">log_warn</span>(<span class="st">&quot;Retry 1/3 due to timeout&quot;</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;Fetched 1,204 articles&quot;</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>}</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">fetch_articles</span>()</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching articles</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ Connecting to API</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ Retry 1/3 due to timeout</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ Fetched 1,204 articles</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span></code></pre></div>
+</div>
+<div id="handling-uncaught-errors-with-with_logging" class="section level2">
+<h2>Handling uncaught errors with <code>with_logging()</code></h2>
+<p>If a step’s code actually throws, wrap the run in
+<code>with_logging()</code>. Every step still open at the moment of the
+error is flagged as failed before the stack unwinds, the error is logged
+as a leaf line, a run summary prints, and the error is rethrown –
+<code>with_logging()</code> never silently swallows it.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>run_classifier <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="fu">with_logging</span>({</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="fu">log_step</span>(<span class="st">&quot;Classifying&quot;</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">&quot;model timeout after 30s&quot;</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  })</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>}</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="fu">tryCatch</span>(<span class="fu">run_classifier</span>(), <span class="at">error =</span> <span class="cf">function</span>(e) <span class="fu">invisible</span>(<span class="cn">NULL</span>))</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; ▶ Classifying</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; ├─ ✖ model timeout after 30s</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; ✖ Run failed in 0.00s</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; └─ ✖ Done  0.00s</span></span></code></pre></div>
+<p>Even <em>without</em> <code>with_logging()</code>, depth tracking
+still unwinds correctly on an uncaught error – the step just renders as
+dimmed/interrupted rather than retroactively painted red, since there
+was no handler installed to catch the condition and flag it before the
+stack unwound.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>risky <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;risky&quot;</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">&quot;boom&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>}</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="fu">tryCatch</span>(<span class="fu">risky</span>(), <span class="at">error =</span> <span class="cf">function</span>(e) <span class="fu">invisible</span>(<span class="cn">NULL</span>))</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; ▶ risky</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; └─ ◌ Done  0.00s</span></span></code></pre></div>
+</div>
+<div id="grouping" class="section level2">
+<h2>Grouping</h2>
+<p><code>log_step(label, group = value)</code> collapses adjacent steps
+that share the same <code>value</code> under one synthetic header,
+instead of nesting each step on its own. Here several files belong to
+the same dataset, so each dataset becomes a header and its files sit
+underneath. The group stays open across calls with a matching value and
+only closes – as a sibling, with its own status aggregated from its
+members – once a step with a different value (or a plain ungrouped step)
+appears at the same level, or the enclosing step finishes. Grouping is
+strictly adjacency-based: the same value recurring later, after
+something else has closed the group, opens a fresh one rather than
+reusing the old header.</p>
+<p>Pass a bare <code>value</code> to use it as both the match key and
+the header, or <code>c(name = value)</code> to show a fixed
+<code>name</code> while still grouping on <code>value</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>load_file <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset, file) {</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">log_step</span>(file, <span class="at">group =</span> dataset)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;Reading rows&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;Merged into dataset&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>}</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>import_datasets <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Import datasets&quot;</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;sales&quot;</span>,   <span class="st">&quot;2023.csv&quot;</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;sales&quot;</span>,   <span class="st">&quot;2024.csv&quot;</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;returns&quot;</span>, <span class="st">&quot;2024.csv&quot;</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>}</span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="fu">import_datasets</span>()</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; ▶ Import datasets</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; ├─ ▣ sales</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2023.csv</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ Reading rows</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ Merged into dataset</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2024.csv</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ Reading rows</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ Merged into dataset</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; ├─ ▣ returns</span></span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2024.csv</span></span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ Reading rows</span></span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ Merged into dataset</span></span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+</div>
+<div id="themes" class="section level2">
+<h2>Themes</h2>
+<p>Three built-in presets are available: <code>&quot;unicode&quot;</code>
+(default), <code>&quot;ascii&quot;</code> (safe for log files, CI, and non-UTF-8
+terminals), and <code>&quot;emoji&quot;</code>. Every glyph is overridable, and
+switching themes never breaks column alignment, since each glyph
+declares its own rendered width rather than having that width measured
+from the string.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;ascii&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; &gt; Pipeline</span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; |- &gt; Load config</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; |  |- i Reading config.yml</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; |  |- + Validated 12 parameters</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; |  |- + Done  0.00s</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; |- + Done  0.00s</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
+<p>Individual glyph slots can be overridden with <code>overrides</code>
+– a named list keyed by slot, each element holding only the fields to
+change (everything else is kept from the active theme):</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>, <span class="at">overrides =</span> <span class="fu">list</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="at">success =</span> <span class="fu">list</span>(<span class="at">glyph =</span> <span class="st">&quot;*&quot;</span>, <span class="at">color =</span> <span class="fu">c</span>(<span class="st">&quot;green&quot;</span>, <span class="st">&quot;bold&quot;</span>)),</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">group   =</span> <span class="fu">list</span>(<span class="at">bracket =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>))</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ Reading config.yml</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; │  ├─ * Validated 12 parameters</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; │  └─ * Done  0.00s</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; └─ * Done  0.00s</span></span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
+<p><strong>Accepted slots</strong> (valid names in an
+<code>overrides</code> list):</p>
+<table>
+<colgroup>
+<col width="12%" />
+<col width="32%" />
+<col width="54%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Slot</th>
+<th>Applies to</th>
+<th>Fields it accepts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>step</code></td>
+<td>open / running step glyph</td>
+<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
+</tr>
+<tr class="even">
+<td><code>info</code></td>
+<td><code>log_info()</code> leaf</td>
+<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
+</tr>
+<tr class="odd">
+<td><code>debug</code></td>
+<td><code>log_debug()</code> leaf</td>
+<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
+</tr>
+<tr class="even">
+<td><code>success</code></td>
+<td>success glyph (clean close, <code>log_success()</code>)</td>
+<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
+</tr>
+<tr class="odd">
+<td><code>warning</code></td>
+<td><code>log_warn()</code> / elevated step glyph</td>
+<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
+</tr>
+<tr class="even">
+<td><code>error</code></td>
+<td><code>log_error()</code> / elevated step glyph</td>
+<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
+</tr>
+<tr class="odd">
+<td><code>interrupted</code></td>
+<td>abnormal-exit (dimmed) glyph</td>
+<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
+</tr>
+<tr class="even">
+<td><code>group</code></td>
+<td>group header marker</td>
+<td><code>glyph</code>, <code>color</code>, <code>bracket</code></td>
+</tr>
+<tr class="odd">
+<td><code>branch</code></td>
+<td>child connector (<code>├─</code>)</td>
+<td><code>glyph</code>, <code>color</code></td>
+</tr>
+<tr class="even">
+<td><code>corner</code></td>
+<td>close-line connector (<code>└─</code>)</td>
+<td><code>glyph</code>, <code>color</code></td>
+</tr>
+<tr class="odd">
+<td><code>pipe</code></td>
+<td>vertical rail (<code>│</code>)</td>
+<td><code>glyph</code>, <code>color</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Accepted fields</strong> (valid names inside a slot):</p>
+<table>
+<colgroup>
+<col width="20%" />
+<col width="16%" />
+<col width="62%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Type</th>
+<th>Accepted values</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>glyph</code></td>
+<td><code>character(1)</code></td>
+<td>Any string, including <code>&quot;&quot;</code>.</td>
+</tr>
+<tr class="even">
+<td><code>width</code></td>
+<td><code>integer(1)</code></td>
+<td>Rendered display width of the glyph (<code>1</code> normal,
+<code>2</code> emoji/wide). Sets column alignment; status slots
+only.</td>
+</tr>
+<tr class="odd">
+<td><code>color</code></td>
+<td><code>character</code> / <code>NULL</code></td>
+<td>One or more cli styles, or <code>NULL</code>. Named
+(<code>&quot;red&quot;</code>, <code>&quot;cyan&quot;</code>, …), bright
+(<code>&quot;br_red&quot;</code>), backgrounds (<code>&quot;bg_blue&quot;</code>), styles
+(<code>&quot;bold&quot;</code>, <code>&quot;dim&quot;</code>, <code>&quot;italic&quot;</code>), or hex
+(<code>&quot;#ff8800&quot;</code>). A vector combines them,
+e.g. <code>c(&quot;red&quot;, &quot;bold&quot;)</code>.</td>
+</tr>
+<tr class="even">
+<td><code>bracket</code></td>
+<td><code>logical(1)</code></td>
+<td><code>group</code> slot only. <code>TRUE</code> wraps the header
+name in <code>&lt; &gt;</code>.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="output-sinks" class="section level2">
+<h2>Output sinks</h2>
+<p>The console sink is always on. <code>logtree_sink_file()</code> adds
+a plain-text or NDJSON file sink; every logged event fans out to all
+active sinks simultaneously.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>log_path <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.log&quot;</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">logtree_sink_file</span>(log_path, <span class="at">format =</span> <span class="st">&quot;text&quot;</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ Reading config.yml</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ Validated 12 parameters</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="fu">writeLines</span>(<span class="fu">readLines</span>(log_path))</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; &gt; Pipeline</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; |- &gt; Load config</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; |  |- i Reading config.yml</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; |  |- + Validated 12 parameters</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt; |  |- + Done  0.00s</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; |- + Done  0.00s</span></span></code></pre></div>
+</div>
+<div id="verbosity" class="section level2">
+<h2>Verbosity</h2>
+<p><code>logtree_threshold()</code> sets the minimum leaf-line level to
+render (<code>&quot;debug&quot;</code>, <code>&quot;info&quot;</code>, <code>&quot;warn&quot;</code>,
+<code>&quot;error&quot;</code>). Step open/close lines always render regardless of
+verbosity, since hiding them would break the tree structure; a
+suppressed <code>log_warn()</code>/<code>log_error()</code> still
+elevates the enclosing step’s close glyph.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;warn&quot;</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">fetch_articles</span>()</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching articles</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ Retry 1/3 due to timeout</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;info&quot;</span>)</span></code></pre></div>
+<p><code>log_debug()</code> is the most verbose level, for fine-grained
+diagnostic detail. It’s hidden by default (verbosity is
+<code>&quot;info&quot;</code>) and only shown when
+<code>logtree_threshold(&quot;debug&quot;)</code> is called. Like
+<code>log_info()</code> and <code>log_success()</code>, it does not
+elevate the enclosing step’s status.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>fetch_verbose <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Fetching&quot;</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="fu">log_debug</span>(<span class="st">&quot;cache miss for key user:42&quot;</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;connecting to API&quot;</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  <span class="fu">log_debug</span>(<span class="st">&quot;request took 84ms&quot;</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;fetched 12 records&quot;</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>}</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co"># At default verbosity, debug lines are hidden</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="fu">fetch_verbose</span>()</span>
+<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching</span></span>
+<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ connecting to API</span></span>
+<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 12 records</span></span>
+<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a></span>
+<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co"># Raise verbosity to show debug lines</span></span>
+<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;debug&quot;</span>)</span>
+<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="fu">fetch_verbose</span>()</span>
+<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching</span></span>
+<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ cache miss for key user:42</span></span>
+<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ connecting to API</span></span>
+<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ request took 84ms</span></span>
+<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 12 records</span></span>
+<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;info&quot;</span>)</span></code></pre></div>
+</div>
+<div id="integrating-with-the-logger-package" class="section level2">
+<h2>Integrating with the <code>logger</code> package</h2>
+<p>If your codebase already uses the CRAN <code>logger</code> package
+(<a href="https://daroczig.github.io/logger/" class="uri">https://daroczig.github.io/logger/</a>) for logging, you can
+route those calls through <code>logtree</code> without rewriting them.
+Call <code>logtree_logger()</code> once near the top of your script: it
+registers <code>logtree</code>’s custom layout, pairs it with
+<code>logger::appender_void</code> (a no-op appender) so
+<code>logtree</code> does the rendering, and opens <code>logger</code>’s
+own threshold so that <code>logtree_threshold()</code> becomes the
+single gate on what is shown.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;debug&quot;</span>)  <span class="co"># the only gate, now that logtree_logger() opened logger&#39;s</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>ns <span class="ot">&lt;-</span> <span class="st">&quot;my_app&quot;</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="fu">logtree_logger</span>(<span class="at">namespace =</span> ns)</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>process_data <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Processing data&quot;</span>)</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_info</span>(<span class="st">&quot;reading input file&quot;</span>, <span class="at">namespace =</span> ns)</span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_debug</span>(<span class="st">&quot;parsed 5,000 rows&quot;</span>, <span class="at">namespace =</span> ns)</span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_success</span>(<span class="st">&quot;transformation complete&quot;</span>, <span class="at">namespace =</span> ns)</span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>}</span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="fu">process_data</span>()</span>
+<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt; ▶ Processing data</span></span>
+<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ reading input file</span></span>
+<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ parsed 5,000 rows</span></span>
+<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ transformation complete</span></span>
+<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+<p><code>logger</code> severities map onto logtree leaf levels:
+<code>FATAL</code>/<code>ERROR</code> become [log_error()],
+<code>WARN</code> becomes [log_warn()], <code>SUCCESS</code> becomes
+[log_success()], <code>INFO</code> becomes [log_info()], and
+<code>DEBUG</code>/<code>TRACE</code> both become [log_debug()] (logger
+has two debug-ish tiers, logtree has one). Note that
+<code>logger</code>’s own <code>log_threshold()</code> and
+<code>logtree_threshold()</code> are two independent gates applied on
+top of each other – both apply simultaneously, which is intentional.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
