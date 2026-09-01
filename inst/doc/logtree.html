@@ -12,7 +12,7 @@
 
 
 
-<title>logtree</title>
+<title>Get started</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -337,29 +337,70 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">logtree</h1>
+<h1 class="title toc-ignore">Get started</h1>
 
 
+<div id="TOC">
+<ul>
+<li><a href="#the-model" id="toc-the-model">The model</a></li>
+<li><a href="#steps-that-close-themselves" id="toc-steps-that-close-themselves">Steps that close
+themselves</a></li>
+<li><a href="#leaf-lines-and-levels" id="toc-leaf-lines-and-levels">Leaf
+lines and levels</a></li>
+<li><a href="#status-elevation" id="toc-status-elevation">Status
+elevation</a></li>
+<li><a href="#uncaught-errors" id="toc-uncaught-errors">Uncaught
+errors</a></li>
+<li><a href="#routing-r-conditions" id="toc-routing-r-conditions">Routing R conditions</a></li>
+<li><a href="#manual-step-control" id="toc-manual-step-control">Manual
+step control</a></li>
+<li><a href="#grouping" id="toc-grouping">Grouping</a></li>
+<li><a href="#verbosity" id="toc-verbosity">Verbosity</a></li>
+<li><a href="#the-run-digest" id="toc-the-run-digest">The run
+digest</a></li>
+<li><a href="#call-sites" id="toc-call-sites">Call sites</a></li>
+<li><a href="#timestamps" id="toc-timestamps">Timestamps</a></li>
+<li><a href="#themes-and-presets" id="toc-themes-and-presets">Themes and
+presets</a></li>
+<li><a href="#layout-and-density" id="toc-layout-and-density">Layout and
+density</a></li>
+<li><a href="#output-sinks" id="toc-output-sinks">Output sinks</a></li>
+<li><a href="#testing-your-logging" id="toc-testing-your-logging">Testing your logging</a></li>
+<li><a href="#silence" id="toc-silence">Silence</a></li>
+<li><a href="#logger-integration" id="toc-logger-integration">logger
+integration</a></li>
+<li><a href="#where-to-go-next" id="toc-where-to-go-next">Where to go
+next</a></li>
+</ul>
+</div>
 
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(logtree)</span></code></pre></div>
-<p>logtree renders nested process execution as a live, colored tree in
-the console: tree connectors, status glyphs, and elapsed time per step.
-Nesting depth is tracked via frame-exit handlers, so it never
-desynchronizes, even when a step errors partway through.</p>
-<div id="basic-nesting" class="section level2">
-<h2>Basic nesting</h2>
-<p><code>log_step()</code> opens a step and automatically closes it when
-the calling function returns – normally, via an early
-<code>return()</code>, or because an error propagated through it.
-Nesting composes for free: a step opened inside another step is
-automatically indented one level deeper, with no coordination needed
-between the two functions.</p>
+<p>This guide covers every feature of logtree, one section each, with a
+runnable example and its output. Sections are independent – read the
+first two, then jump to whatever you need.</p>
+<p>Each section ends with the reference pages for the functions it used
+and, where one exists, a link to a complete end-to-end run in the <a href="https://IvanSortino.github.io/logtree/articles/examples.html">Examples</a>
+gallery.</p>
+<div id="the-model" class="section level2">
+<h2>The model</h2>
+<p>logtree has exactly two kinds of line.</p>
+<p>A <strong>step</strong> is a node: a unit of work with a beginning,
+an end, an outcome, and a duration. It prints an open line when it
+starts and a close line when it finishes, and anything logged in between
+is nested underneath it.</p>
+<p>A <strong>leaf</strong> is a message logged against whichever step is
+currently open. It has a status – debug, info, success, warning, error –
+but no duration and no children.</p>
+<p>That is the whole vocabulary. Depth comes from R’s own call stack
+rather than from anything you pass: a step opened inside another step is
+one level deeper, because the function that opened it was called from
+inside the function that opened the outer one.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
 <span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>load_config <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
 <span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Load config&quot;</span>)</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;Reading config.yml&quot;</span>)</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;Validated 12 parameters&quot;</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;reading config.yml&quot;</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;validated 12 parameters&quot;</span>)</span>
 <span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>}</span>
 <span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a></span>
 <span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>pipeline <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
@@ -370,388 +411,1070 @@ between the two functions.</p>
 <span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
 <span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
 <span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
-<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ Reading config.yml</span></span>
-<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ Validated 12 parameters</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ reading config.yml</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ validated 12 parameters</span></span>
 <span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.01s</span></span></code></pre></div>
+<p><code>load_config()</code> does not know it is being called from
+inside a step, and <code>pipeline()</code> does not know that
+<code>load_config()</code> logs. Neither passes the other a depth, an
+id, or a handle. That independence is the point: instrumented functions
+compose without coordinating.</p>
+<p>A single line is built from up to six columns, four of them
+optional:</p>
+<p align="center">
+<img role="img" aria-label="One logtree line with its timestamp, rails, connector, glyph, message and call-site columns labelled" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MzMgMTkyIiB3aWR0aD0iNTMzIiBoZWlnaHQ9IjE5MiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJPbmUgbG9ndHJlZSBsaW5lIHdpdGggaXRzIHRpbWVzdGFtcCwgcmFpbHMsIGNvbm5lY3RvciwgZ2x5cGgsIG1lc3NhZ2UgYW5kIGNhbGwtc2l0ZSBjb2x1bW5zIGxhYmVsbGVkIj4KPHRpdGxlPkFuYXRvbXkgb2YgYSBsb2d0cmVlIGxpbmU8L3RpdGxlPgo8cmVjdCB4PSIwLjUiIHk9IjAuNSIgd2lkdGg9IjUzMiIgaGVpZ2h0PSIxOTEiIHJ4PSI4IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNkMGQ3ZGUiLz4KPGcgZm9udC1mYW1pbHk9InVpLW1vbm9zcGFjZSwgU0ZNb25vLVJlZ3VsYXIsICZxdW90O1NGIE1vbm8mcXVvdDssIE1lbmxvLCBDb25zb2xhcywgbW9ub3NwYWNlIiBmb250LXNpemU9IjE0Ij4KPHRleHQgeD0iMjQuMDAiIHk9IjM2IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzhiOTQ5ZSI+MTg6NDM6NDA8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gPC90c3Bhbj48dHNwYW4gZmlsbD0iIzhiOTQ5ZSI+4pSCICA8L3RzcGFuPjx0c3BhbiBmaWxsPSIjOGI5NDllIj7ilJzilIA8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gPC90c3Bhbj48dHNwYW4gZmlsbD0iIzlhNjcwMCI+4pqgPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IGNvZXJjZWQgMyByb3dzIHRvIE5BICA8L3RzcGFuPjx0c3BhbiBmaWxsPSIjOGI5NDllIj5pbm5lcjwvdHNwYW4+PHRzcGFuIGZpbGw9IiM4Yjk0OWUiPigpPC90c3Bhbj48L3RleHQ+CjwvZz4KPGc+CjxwYXRoIGQ9Ik0gMjQuMDAgNDQuMDAgTCAyNC4wMCA0OC4wMCBMIDEwMC4wNSA0OC4wMCBMIDEwMC4wNSA0NC4wMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8bGluZSB4MT0iNjIuMDIiIHkxPSI0OC4wMCIgeDI9IjYyLjAyIiB5Mj0iNjEuMDAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIxIDMiLz4KPHBhdGggZD0iTSAxMDAuMDUgNDQuMDAgTCAxMDAuMDUgNDguMDAgTCAxMjUuNDAgNDguMDAgTCAxMjUuNDAgNDQuMDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjIiLz4KPGxpbmUgeDE9IjExMi43MiIgeTE9IjQ4LjAwIiB4Mj0iMTEyLjcyIiB5Mj0iODIuMDAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIxIDMiLz4KPHBhdGggZD0iTSAxMjUuNDAgNDQuMDAgTCAxMjUuNDAgNDguMDAgTCAxNTAuNzUgNDguMDAgTCAxNTAuNzUgNDQuMDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjIiLz4KPGxpbmUgeDE9IjEzOC4wNyIgeTE9IjQ4LjAwIiB4Mj0iMTM4LjA3IiB5Mj0iMTAzLjAwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxwYXRoIGQ9Ik0gMTUwLjc1IDQ0LjAwIEwgMTUwLjc1IDQ4LjAwIEwgMTY3LjY1IDQ4LjAwIEwgMTY3LjY1IDQ0LjAwIiBmaWxsPSJub25lIiBzdHJva2U9IiM5YTY3MDAiIHN0cm9rZS13aWR0aD0iMS4yIi8+CjxsaW5lIHgxPSIxNTkuMjAiIHkxPSI0OC4wMCIgeDI9IjE1OS4yMCIgeTI9IjEyNC4wMCIgc3Ryb2tlPSIjOWE2NzAwIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjEgMyIvPgo8cGF0aCBkPSJNIDE2Ny42NSA0NC4wMCBMIDE2Ny42NSA0OC4wMCBMIDMzNi42NSA0OC4wMCBMIDMzNi42NSA0NC4wMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjQyOTJmIiBzdHJva2Utd2lkdGg9IjEuMiIvPgo8bGluZSB4MT0iMjUyLjE1IiB5MT0iNDguMDAiIHgyPSIyNTIuMTUiIHkyPSIxNDUuMDAiIHN0cm9rZT0iIzI0MjkyZiIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIxIDMiLz4KPHBhdGggZD0iTSAzNTMuNTUgNDQuMDAgTCAzNTMuNTUgNDguMDAgTCA0MTIuNzAgNDguMDAgTCA0MTIuNzAgNDQuMDAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFiN2M4MyIgc3Ryb2tlLXdpZHRoPSIxLjIiLz4KPGxpbmUgeDE9IjM4My4xMiIgeTE9IjQ4LjAwIiB4Mj0iMzgzLjEyIiB5Mj0iMTY2LjAwIiBzdHJva2U9IiMxYjdjODMiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjwvZz4KPGcgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtRm9udCwgJnF1b3Q7U2Vnb2UgVUkmcXVvdDssIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTIiPgo8cmVjdCB4PSI2NS4wMyIgeT0iNTguMDAiIHdpZHRoPSIxNzcuMDAiIGhlaWdodD0iMTcuMDAiIGZpbGw9IiNmZmZmZmYiLz4KPGNpcmNsZSBjeD0iNjIuMDIiIGN5PSI2NS4wMCIgcj0iMiIgZmlsbD0iIzhiOTQ5ZSIvPgo8dGV4dCB4PSI2OS4wMyIgeT0iNjkuMDAiIGZpbGw9IiM4Yjk0OWUiPnRpbWVzdGFtcCBjb2x1bW4gKG9wdC1pbik8L3RleHQ+CjxyZWN0IHg9IjExNS43MiIgeT0iNzkuMDAiIHdpZHRoPSIxOTYuODAiIGhlaWdodD0iMTcuMDAiIGZpbGw9IiNmZmZmZmYiLz4KPGNpcmNsZSBjeD0iMTEyLjcyIiBjeT0iODYuMDAiIHI9IjIiIGZpbGw9IiM4Yjk0OWUiLz4KPHRleHQgeD0iMTE5LjcyIiB5PSI5MC4wMCIgZmlsbD0iIzhiOTQ5ZSI+cmFpbHM6IG9uZSBwZXIgb3BlbiBhbmNlc3RvcjwvdGV4dD4KPHJlY3QgeD0iMTQxLjA3IiB5PSIxMDAuMDAiIHdpZHRoPSI3MS40MCIgaGVpZ2h0PSIxNy4wMCIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSIxMzguMDciIGN5PSIxMDcuMDAiIHI9IjIiIGZpbGw9IiM4Yjk0OWUiLz4KPHRleHQgeD0iMTQ1LjA3IiB5PSIxMTEuMDAiIGZpbGw9IiM4Yjk0OWUiPmNvbm5lY3RvcjwvdGV4dD4KPHJlY3QgeD0iMTYyLjIwIiB5PSIxMjEuMDAiIHdpZHRoPSI5MS4yMCIgaGVpZ2h0PSIxNy4wMCIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSIxNTkuMjAiIGN5PSIxMjguMDAiIHI9IjIiIGZpbGw9IiM5YTY3MDAiLz4KPHRleHQgeD0iMTY2LjIwIiB5PSIxMzIuMDAiIGZpbGw9IiM5YTY3MDAiPnN0YXR1cyBnbHlwaDwvdGV4dD4KPHJlY3QgeD0iMjU1LjE1IiB5PSIxNDIuMDAiIHdpZHRoPSI1OC4yMCIgaGVpZ2h0PSIxNy4wMCIgZmlsbD0iI2ZmZmZmZiIvPgo8Y2lyY2xlIGN4PSIyNTIuMTUiIGN5PSIxNDkuMDAiIHI9IjIiIGZpbGw9IiMyNDI5MmYiLz4KPHRleHQgeD0iMjU5LjE1IiB5PSIxNTMuMDAiIGZpbGw9IiMyNDI5MmYiPm1lc3NhZ2U8L3RleHQ+CjxyZWN0IHg9IjM4Ni4xMiIgeT0iMTYzLjAwIiB3aWR0aD0iMTMwLjgwIiBoZWlnaHQ9IjE3LjAwIiBmaWxsPSIjZmZmZmZmIi8+CjxjaXJjbGUgY3g9IjM4My4xMiIgY3k9IjE3MC4wMCIgcj0iMiIgZmlsbD0iIzFiN2M4MyIvPgo8dGV4dCB4PSIzOTAuMTIiIHk9IjE3NC4wMCIgZmlsbD0iIzFiN2M4MyI+Y2FsbCBzaXRlIChvcHQtaW4pPC90ZXh0Pgo8L2c+Cjwvc3ZnPgoK" alt="One logtree line with its timestamp, rails, connector, glyph, message and call-site columns labelled" width="700" />
+</p>
+<p>The rails and connector come from depth, the glyph from status, and
+the three opt-in columns – timestamp, elapsed time, call site – are
+theme slots covered later on. Every glyph declares its own display
+width, which is what keeps the message column aligned when you swap
+themes.</p>
+<p><strong>Reference:</strong> <code>log_step()</code>,
+<code>log_info()</code>, <code>logtree_reset()</code></p>
 </div>
-<div id="leaf-lines-and-status-elevation" class="section level2">
-<h2>Leaf lines and status elevation</h2>
-<p><code>log_info()</code> and <code>log_success()</code> are plain leaf
-lines. <code>log_warn()</code> and <code>log_error()</code> additionally
-elevate the <em>enclosing</em> step’s status, so its close line renders
-the elevated glyph even though the function that opened it returns
-normally.</p>
+<div id="steps-that-close-themselves" class="section level2">
+<h2>Steps that close themselves</h2>
+<p><code>log_step()</code> opens a step and registers its close on
+<strong>the calling function’s frame</strong>, not on its own. The close
+therefore fires when that function exits – by returning normally, by an
+early <code>return()</code>, or because an error unwound through it.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>fetch_articles <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Fetching articles&quot;</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;Connecting to API&quot;</span>)</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="fu">log_warn</span>(<span class="st">&quot;Retry 1/3 due to timeout&quot;</span>)</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;Fetched 1,204 articles&quot;</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>}</span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">fetch_articles</span>()</span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching articles</span></span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ Connecting to API</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ Retry 1/3 due to timeout</span></span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ Fetched 1,204 articles</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span></code></pre></div>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>validate <span class="ot">&lt;-</span> <span class="cf">function</span>(rows) {</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Validate&quot;</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="cf">if</span> (rows <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>    <span class="fu">log_warn</span>(<span class="st">&quot;nothing to validate&quot;</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">invisible</span>(<span class="cn">NULL</span>))       <span class="co"># early return: the step still closes</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  }</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;all rows valid&quot;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>}</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>check <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Check&quot;</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="fu">validate</span>(<span class="dv">0</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>  <span class="fu">validate</span>(<span class="dv">12</span>)</span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>}</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="fu">check</span>()</span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; ▶ Check</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Validate</span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; │  ├─ ⚠ nothing to validate</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; │  └─ ⚠ Done  0.00s</span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Validate</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ all rows valid</span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+<p>Both <code>validate()</code> calls closed at the right depth, and the
+second one is a sibling of the first rather than a child, even though
+the first left through a <code>return()</code> in the middle of its
+body. There is no path out of a function that skips the close, which is
+what stops indentation from drifting during a long run.</p>
+<p>The mechanism is invisible in the output, so it is worth seeing laid
+out against a run. The bars are how long each frame lives:</p>
+<p align="center">
+<img role="img" aria-label="An execution trace beside the logtree output it produces, with bars showing each function frame&#39;s lifetime" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1ODMgMjI0IiB3aWR0aD0iNTgzIiBoZWlnaHQ9IjIyNCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJBbiBleGVjdXRpb24gdHJhY2UgYmVzaWRlIHRoZSBsb2d0cmVlIG91dHB1dCBpdCBwcm9kdWNlcywgd2l0aCBiYXJzIHNob3dpbmcgZWFjaCBmdW5jdGlvbiBmcmFtZSdzIGxpZmV0aW1lIj4KPHRpdGxlPkhvdyBhIGxvZ3RyZWUgc3RlcCBrbm93cyB3aGVuIHRvIGNsb3NlPC90aXRsZT4KPHJlY3QgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSI1ODIiIGhlaWdodD0iMjIzIiByeD0iOCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjZDBkN2RlIi8+CjxnPgo8cmVjdCB4PSIyMC4wMCIgeT0iMzcuMDAiIHdpZHRoPSI0IiBoZWlnaHQ9IjE0OC4wMCIgcng9IjIuMCIgZmlsbD0iIzFiN2M4MyIgb3BhY2l0eT0iMC45Ii8+CjxyZWN0IHg9IjI5LjAwIiB5PSI4MS4wMCIgd2lkdGg9IjQiIGhlaWdodD0iODIuMDAiIHJ4PSIyLjAiIGZpbGw9IiM4MjUwZGYiIG9wYWNpdHk9IjAuOSIvPgo8L2c+CjxnIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsICZxdW90O1NlZ29lIFVJJnF1b3Q7LCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIj4KPHRleHQgeD0iNDYuMDAiIHk9IjE4IiBmaWxsPSIjOGI5NDllIj53aGF0IHJ1bnMsIGluIG9yZGVyPC90ZXh0Pgo8dGV4dCB4PSIzNTguOTAiIHk9IjE4IiBmaWxsPSIjOGI5NDllIj53aGF0IGxvZ3RyZWUgcHJpbnRzPC90ZXh0Pgo8L2c+CjxnIGZvbnQtZmFtaWx5PSJ1aS1tb25vc3BhY2UsIFNGTW9uby1SZWd1bGFyLCAmcXVvdDtTRiBNb25vJnF1b3Q7LCBNZW5sbywgQ29uc29sYXMsIG1vbm9zcGFjZSIgZm9udC1zaXplPSIxMyI+Cjx0ZXh0IHg9IjQ2LjAwIiB5PSI0Ny4wMCIgZmlsbD0iIzI0MjkyZiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+cGlwZWxpbmUoKTwvdGV4dD4KPHRleHQgeD0iNDYuMDAiIHk9IjY5LjAwIiBmaWxsPSIjMjQyOTJmIiB4bWw6c3BhY2U9InByZXNlcnZlIj4gIGxvZ19zdGVwKCJQaXBlbGluZSIpPC90ZXh0Pgo8dGV4dCB4PSI0Ni4wMCIgeT0iOTEuMDAiIGZpbGw9IiMyNDI5MmYiIHhtbDpzcGFjZT0icHJlc2VydmUiPiAgbG9hZF9jb25maWcoKTwvdGV4dD4KPHRleHQgeD0iNDYuMDAiIHk9IjExMy4wMCIgZmlsbD0iIzI0MjkyZiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+ICAgIGxvZ19zdGVwKCJMb2FkIGNvbmZpZyIpPC90ZXh0Pgo8dGV4dCB4PSI0Ni4wMCIgeT0iMTM1LjAwIiBmaWxsPSIjMjQyOTJmIiB4bWw6c3BhY2U9InByZXNlcnZlIj4gICAgbG9nX2luZm8oInJlYWRpbmcgY29uZmlnLnltbCIpPC90ZXh0Pgo8dGV4dCB4PSI0Ni4wMCIgeT0iMTU3LjAwIiBmaWxsPSIjOGI5NDllIiB4bWw6c3BhY2U9InByZXNlcnZlIj4gICMgbG9hZF9jb25maWcoKSByZXR1cm5zPC90ZXh0Pgo8dGV4dCB4PSI0Ni4wMCIgeT0iMTc5LjAwIiBmaWxsPSIjOGI5NDllIiB4bWw6c3BhY2U9InByZXNlcnZlIj4jIHBpcGVsaW5lKCkgcmV0dXJuczwvdGV4dD4KCjx0ZXh0IHg9IjM1OC45MCIgeT0iNjkuMDAiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWI3YzgzIj7ilrY8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gUGlwZWxpbmU8L3RzcGFuPjwvdGV4dD4KCjx0ZXh0IHg9IjM1OC45MCIgeT0iMTEzLjAwIiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzhiOTQ5ZSI+4pSc4pSAPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMxYjdjODMiPuKWtjwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiBMb2FkIGNvbmZpZzwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSIzNTguOTAiIHk9IjEzNS4wMCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiM4Yjk0OWUiPuKUgiAgPC90c3Bhbj48dHNwYW4gZmlsbD0iIzhiOTQ5ZSI+4pSc4pSAPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMwOTY5ZGEiPuKEuTwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiByZWFkaW5nIGNvbmZpZy55bWw8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iMzU4LjkwIiB5PSIxNTcuMDAiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjOGI5NDllIj7ilIIgIDwvdHNwYW4+PHRzcGFuIGZpbGw9IiM4Yjk0OWUiPuKUlOKUgDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiA8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gRG9uZSAgMC44MHM8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iMzU4LjkwIiB5PSIxNzkuMDAiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjOGI5NDllIj7ilJTilIA8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gPC90c3Bhbj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IERvbmUgIDYuNTBzPC90c3Bhbj48L3RleHQ+CjwvZz4KPGcgZm9udC1mYW1pbHk9Ii1hcHBsZS1zeXN0ZW0sIEJsaW5rTWFjU3lzdGVtRm9udCwgJnF1b3Q7U2Vnb2UgVUkmcXVvdDssIEhlbHZldGljYSwgQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEiPgo8cmVjdCB4PSI0Ni4wMCIgeT0iMTk2LjAwIiB3aWR0aD0iNCIgaGVpZ2h0PSIxMCIgcng9IjIiIGZpbGw9IiMxYjdjODMiLz4KPHRleHQgeD0iNTYuMDAiIHk9IjIwNC4wMCIgZmlsbD0iIzhiOTQ5ZSI+cGlwZWxpbmUoKSBmcmFtZTwvdGV4dD4KPHJlY3QgeD0iMTc3LjIwIiB5PSIxOTYuMDAiIHdpZHRoPSI0IiBoZWlnaHQ9IjEwIiByeD0iMiIgZmlsbD0iIzgyNTBkZiIvPgo8dGV4dCB4PSIxODcuMjAiIHk9IjIwNC4wMCIgZmlsbD0iIzhiOTQ5ZSI+bG9hZF9jb25maWcoKSBmcmFtZTwvdGV4dD4KPC9nPgo8L3N2Zz4KCg==" alt="An execution trace beside the logtree output it produces, with bars showing each function frame&#39;s lifetime" width="700" />
+</p>
+<p>Notice the two rows that print a close line: neither of them is a
+<code>log_*()</code> call. They are returns. The close is written by the
+frame ending, which is why it cannot be skipped and why nothing has to
+remember to balance it.</p>
+<div id="at-the-top-level" class="section level3">
+<h3>At the top level</h3>
+<p><code>log_step()</code> needs a frame to attach to. At the top level
+of a script or console session there is not one – the global environment
+never “returns” – so the step would stay open forever. logtree prints a
+one-time nudge if you do this, and points you at the manual pair
+instead:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">log_open</span>(<span class="st">&quot;Section&quot;</span>)   <span class="co"># opens</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co"># ... work ...</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="fu">log_close</span>()           <span class="co"># closes</span></span></code></pre></div>
+<p>See <a href="#manual-step-control">Manual step control</a>.</p>
+<p><strong>Reference:</strong> <code>log_step()</code>,
+<code>log_open()</code>, <code>log_close()</code> ·
+<strong>Example:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#nightly-etl">Nightly
+ETL</a></p>
 </div>
-<div id="handling-uncaught-errors-with-with_logging" class="section level2">
-<h2>Handling uncaught errors with <code>with_logging()</code></h2>
-<p>If a step’s code actually throws, wrap the run in
-<code>with_logging()</code>. Every step still open at the moment of the
-error is flagged as failed before the stack unwinds, the error is logged
-as a leaf line, a run summary prints, and the error is rethrown –
-<code>with_logging()</code> never silently swallows it.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>run_classifier <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="fu">with_logging</span>({</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="fu">log_step</span>(<span class="st">&quot;Classifying&quot;</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    <span class="fu">stop</span>(<span class="st">&quot;model timeout after 30s&quot;</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>  })</span>
-<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>}</span>
-<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a></span>
-<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="fu">tryCatch</span>(<span class="fu">run_classifier</span>(), <span class="at">error =</span> <span class="cf">function</span>(e) <span class="fu">invisible</span>(<span class="cn">NULL</span>))</span>
-<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt; ▶ Classifying</span></span>
-<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; ├─ ✖ model timeout after 30s</span></span>
-<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt; ✖ Run failed in 0.00s</span></span>
-<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="co">#&gt; └─ ✖ Done  0.00s</span></span></code></pre></div>
-<p>Even <em>without</em> <code>with_logging()</code>, depth tracking
-still unwinds correctly on an uncaught error – the step just renders as
-dimmed/interrupted rather than retroactively painted red, since there
-was no handler installed to catch the condition and flag it before the
-stack unwound.</p>
+</div>
+<div id="leaf-lines-and-levels" class="section level2">
+<h2>Leaf lines and levels</h2>
+<p>Five functions log a leaf under the current step. They differ in
+status, in what they mean, and in whether they touch the step around
+them.</p>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function</th>
+<th>Level</th>
+<th>Elevates its step?</th>
+<th>For</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>log_debug()</code></td>
+<td>most verbose</td>
+<td>no</td>
+<td>diagnostic detail, hidden by default</td>
+</tr>
+<tr class="even">
+<td><code>log_info()</code></td>
+<td>ordinary</td>
+<td>no</td>
+<td>what is happening</td>
+</tr>
+<tr class="odd">
+<td><code>log_success()</code></td>
+<td>ordinary</td>
+<td>no</td>
+<td>a milestone reached</td>
+</tr>
+<tr class="even">
+<td><code>log_warn()</code></td>
+<td>high</td>
+<td>yes</td>
+<td>something survivable went wrong</td>
+</tr>
+<tr class="odd">
+<td><code>log_error()</code></td>
+<td>highest</td>
+<td>yes</td>
+<td>something failed, without throwing</td>
+</tr>
+</tbody>
+</table>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>risky <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;risky&quot;</span>)</span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">&quot;boom&quot;</span>)</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>}</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="fu">tryCatch</span>(<span class="fu">risky</span>(), <span class="at">error =</span> <span class="cf">function</span>(e) <span class="fu">invisible</span>(<span class="cn">NULL</span>))</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; ▶ risky</span></span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; └─ ◌ Done  0.00s</span></span></code></pre></div>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>fetch <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Fetch&quot;</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>  <span class="fu">log_debug</span>(<span class="st">&quot;cache miss for key user:42&quot;</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;requesting from API&quot;</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>  <span class="fu">log_warn</span>(<span class="st">&quot;rate limit at 80%&quot;</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;fetched 128 rows&quot;</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="fu">fetch</span>()</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; ▶ Fetch</span></span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ requesting from API</span></span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ rate limit at 80%</span></span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 128 rows</span></span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span></code></pre></div>
+<p>The debug line is missing because the default threshold is
+<code>&quot;info&quot;</code>; see <a href="#verbosity">Verbosity</a>.</p>
+<p>All five take the same two extra arguments: <code>close = TRUE</code>
+closes the enclosing step immediately after logging the line, and
+<code>summary = TRUE</code>/<code>FALSE</code> pins the line into the
+run digest or keeps it out regardless of its status (see <a href="#the-run-digest">The run digest</a>).</p>
+<p><strong>Reference:</strong> <code>log_info()</code>,
+<code>log_success()</code>, <code>log_warn()</code>,
+<code>log_error()</code>, <code>log_debug()</code></p>
+</div>
+<div id="status-elevation" class="section level2">
+<h2>Status elevation</h2>
+<p><code>log_warn()</code> and <code>log_error()</code> do something the
+other three do not: they raise the status of the nearest open step, so
+its close line reports the outcome even though the function that opened
+it returned normally.</p>
+<p>Statuses are ordered
+<code>running &lt; success &lt; warning &lt; error</code>, and elevation
+only ever moves up that order. One warning among fifty successes leaves
+the step marked as a warning; a later success cannot quietly clear
+it.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>parse_rows <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Parse rows&quot;</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;1,200 rows&quot;</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">log_warn</span>(<span class="st">&quot;coerced 3 rows to NA&quot;</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;parsed&quot;</span>)            <span class="co"># does not undo the warning</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>}</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="fu">parse_rows</span>()</span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; ▶ Parse rows</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ 1,200 rows</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ coerced 3 rows to NA</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ parsed</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span></code></pre></div>
+<p align="center">
+<img role="img" aria-label="A logtree tree where a warning leaf elevates its enclosing step&#39;s close glyph" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NjIgMTU5IiB3aWR0aD0iNjYyIiBoZWlnaHQ9IjE1OSIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJBIGxvZ3RyZWUgdHJlZSB3aGVyZSBhIHdhcm5pbmcgbGVhZiBlbGV2YXRlcyBpdHMgZW5jbG9zaW5nIHN0ZXAncyBjbG9zZSBnbHlwaCI+Cjx0aXRsZT5TdGF0dXMgZWxldmF0aW9uPC90aXRsZT4KPHJlY3QgeD0iMC41IiB5PSIwLjUiIHdpZHRoPSI2NjEiIGhlaWdodD0iMTU4IiByeD0iOCIgZmlsbD0iI2ZmZmZmZiIgc3Ryb2tlPSIjZDBkN2RlIi8+CjxnIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+CjxsaW5lIHgxPSI0Ny40NyIgeTE9IjU0LjAwIiB4Mj0iNDcuNDciIHkyPSIxMjAuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iMjMuOTMiIHkxPSIzNS4wMCIgeDI9IjIzLjkzIiB5Mj0iMTM5LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjIzLjkzIiB5MT0iNDQuNTAiIHgyPSIzNS43MCIgeTI9IjQ0LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjQ3LjQ3IiB5MT0iNjMuNTAiIHgyPSI1OS4yNSIgeTI9IjYzLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjQ3LjQ3IiB5MT0iODIuNTAiIHgyPSI1OS4yNSIgeTI9IjgyLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjQ3LjQ3IiB5MT0iMTAxLjUwIiB4Mj0iNTkuMjUiIHkyPSIxMDEuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iNDcuNDciIHkxPSIxMjAuNTAiIHgyPSI1OS4yNSIgeTI9IjEyMC41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSIyMy45MyIgeTE9IjEzOS41MCIgeDI9IjM1LjcwIiB5Mj0iMTM5LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9nPgo8ZyBmb250LWZhbWlseT0idWktbW9ub3NwYWNlLCBTRk1vbm8tUmVndWxhciwgJnF1b3Q7U0YgTW9ubyZxdW90OywgTWVubG8sIENvbnNvbGFzLCBtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTMiPgo8dGV4dCB4PSIyMC4wMCIgeT0iMjkiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWI3YzgzIj7ilrY8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gTG9hZCBkYXRhPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjQzLjU1IiB5PSI0OCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYjdjODMiPuKWtjwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiBQYXJzZSByb3dzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjY3LjEwIiB5PSI2NyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMwOTY5ZGEiPuKEuTwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiAxLDIwMCByb3dzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjY3LjEwIiB5PSI4NiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiM5YTY3MDAiPuKaoDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiBjb2VyY2VkIDMgcm93cyB0byBOQTwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI2Ny4xMCIgeT0iMTA1IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IHBhcnNlZDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI2Ny4xMCIgeT0iMTI0IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzlhNjcwMCI+4pqgPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IERvbmUgIDAuODBzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjQzLjU1IiB5PSIxNDMiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gRG9uZSAgNi41MHM8L3RzcGFuPjwvdGV4dD4KPC9nPgo8ZyBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCAmcXVvdDtTZWdvZSBVSSZxdW90OywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSI+CjxsaW5lIHgxPSIxNjkuMzAiIHkxPSI2My41MCIgeDI9IjI5MC4wMCIgeTI9IjYzLjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjI5NC4wMCIgY3k9IjYzLjUwIiByPSIyIiBmaWxsPSIjMDk2OWRhIi8+Cjx0ZXh0IHg9IjMwMC4wMCIgeT0iNjcuMTciIGZpbGw9IiMwOTY5ZGEiPmFuIGluZm8gbGVhZiBsZWF2ZXMgaXRzIHN0ZXAgYWxvbmU8L3RleHQ+CjxsaW5lIHgxPSIyNDcuODAiIHkxPSI4Mi41MCIgeDI9IjI5MC4wMCIgeTI9IjgyLjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjI5NC4wMCIgY3k9IjgyLjUwIiByPSIyIiBmaWxsPSIjOWE2NzAwIi8+Cjx0ZXh0IHg9IjMwMC4wMCIgeT0iODYuMTciIGZpbGw9IiM5YTY3MDAiPmxvZ193YXJuKCkgZWxldmF0ZXMgdGhlIG5lYXJlc3Qgb3BlbiBzdGVwPC90ZXh0Pgo8bGluZSB4MT0iMTM3LjkwIiB5MT0iMTAxLjUwIiB4Mj0iMjkwLjAwIiB5Mj0iMTAxLjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjI5NC4wMCIgY3k9IjEwMS41MCIgcj0iMiIgZmlsbD0iIzFhN2YzNyIvPgo8dGV4dCB4PSIzMDAuMDAiIHk9IjEwNS4xNyIgZmlsbD0iIzFhN2YzNyI+YSBsYXRlciBzdWNjZXNzIGNhbm5vdCB1bmRvIGl0IOKAlCBlbGV2YXRpb24gb25seSBtb3ZlcyB1cDwvdGV4dD4KPGxpbmUgeDE9IjE3Ny4xNSIgeTE9IjEyMC41MCIgeDI9IjI5MC4wMCIgeTI9IjEyMC41MCIgc3Ryb2tlPSIjZDBkN2RlIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjEgMyIvPgo8Y2lyY2xlIGN4PSIyOTQuMDAiIGN5PSIxMjAuNTAiIHI9IjIiIGZpbGw9IiM5YTY3MDAiLz4KPHRleHQgeD0iMzAwLjAwIiB5PSIxMjQuMTciIGZpbGw9IiM5YTY3MDAiPnNvIHRoZSBzdGVwIGNsb3NlcyB3YXJuZWQsIGhhdmluZyBuZXZlciB0aHJvd248L3RleHQ+CjwvZz4KPC9zdmc+Cgo=" alt="A logtree tree where a warning leaf elevates its enclosing step&#39;s close glyph" width="720" />
+</p>
+<p>Nothing was thrown here. <code>log_error()</code> behaves the same
+way – it records a failure and lets the run continue, which is what you
+want for an error you have already recovered from. When you know the
+recovery worked, close the step explicitly to override the elevated
+glyph:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>connect <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Connect&quot;</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="fu">log_error</span>(<span class="st">&quot;primary unreachable (timeout after 5s)&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;failing over to replica&quot;</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;connected to replica&quot;</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="fu">log_close</span>(<span class="at">status =</span> <span class="st">&quot;success&quot;</span>)    <span class="co"># override: we recovered</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>}</span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="fu">connect</span>()</span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; ▶ Connect</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt; ├─ ✖ primary unreachable (timeout after 5s)</span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ failing over to replica</span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ connected to replica</span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+<p><strong>Reference:</strong> <code>log_warn()</code>,
+<code>log_error()</code>, <code>log_close()</code> ·
+<strong>Example:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#a-recovered-failure">A
+recovered failure</a></p>
+</div>
+<div id="uncaught-errors" class="section level2">
+<h2>Uncaught errors</h2>
+<p>Elevation covers errors you handle. For errors you do not, wrap the
+run in <code>with_logging()</code>. It installs a calling handler that,
+at the moment the error is signalled and <strong>before</strong> the
+stack unwinds, marks every currently-open step as failed and logs the
+condition message as a leaf at the depth it happened. Then it prints its
+run summary line and rethrows.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>apply_migration <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Apply migration&quot;</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;adding column users.tier&quot;</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">&quot;constraint violation on users.email&quot;</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>}</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>release <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Release v2.1&quot;</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>  <span class="fu">apply_migration</span>()</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>}</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a><span class="fu">with_logging</span>(<span class="fu">release</span>())</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a><span class="co">#&gt; ▶ Release v2.1</span></span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Apply migration</span></span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ adding column users.tier</span></span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✖ constraint violation on users.email</span></span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt; │  └─ ✖ Done  0.00s</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; └─ ✖ Done  0.00s</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; ✖ Run failed in 0.00s</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; Error in `apply_migration()`:</span></span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; ! constraint violation on users.email</span></span></code></pre></div>
+<p><code>with_logging()</code> never swallows an error. The
+<code>Error in ...</code> line above is the original condition, rethrown
+after logging – so <code>tryCatch()</code> around the whole thing still
+works exactly as it would have.</p>
+<p>Without <code>with_logging()</code>, depth tracking is still correct,
+because the close is tied to the frame either way. What is lost is the
+diagnosis: no handler saw the condition, so the step cannot be painted
+red retroactively. It closes as <strong>interrupted</strong> – a dimmed
+glyph meaning “this never finished” – rather than claiming success:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>risky <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Risky&quot;</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="fu">stop</span>(<span class="st">&quot;boom&quot;</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>}</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">try</span>(<span class="fu">risky</span>(), <span class="at">silent =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; ▶ Risky</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; └─ ◌ Done  0.00s</span></span></code></pre></div>
+<p>That distinction is worth keeping in mind when reading a saved log: a
+dimmed step means the run was not wrapped, not that the failure was less
+serious.</p>
+<p><code>with_logging(global = TRUE)</code> installs the same handling
+at the top level of a script, where there is no expression to wrap – see
+<a href="https://IvanSortino.github.io/logtree/articles/recipes.html">Recipes</a>.</p>
+<p><strong>Reference:</strong> <code>with_logging()</code> ·
+<strong>Example:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#a-migration-that-fails">A
+migration that fails</a></p>
+</div>
+<div id="routing-r-conditions" class="section level2">
+<h2>Routing R conditions</h2>
+<p>R code you call is going to <code>warning()</code> and
+<code>message()</code> at you. By default those go to stderr, outside
+the tree, and end up in a different file or nowhere at all.
+<code>with_logging(warnings = TRUE)</code> routes them in: a
+<code>warning()</code> becomes a <code>log_warn()</code> leaf and a
+<code>message()</code> becomes a <code>log_info()</code> leaf, at the
+depth where it happened.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>noisy <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Load data&quot;</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;using cached schema&quot;</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="fu">warning</span>(<span class="st">&quot;3 rows coerced to NA&quot;</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;1,200 rows&quot;</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a>}</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="fu">with_logging</span>(<span class="fu">noisy</span>(), <span class="at">summary =</span> <span class="cn">FALSE</span>, <span class="at">warnings =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; ▶ Load data</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ using cached schema</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ 3 rows coerced to NA</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ 1,200 rows</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span></code></pre></div>
+<p>Once routed they are ordinary leaves: they reach every sink, they
+reach the digest, and the routed warning elevates its step exactly as
+<code>log_warn()</code> would. In real terminal colour that reads
+as:</p>
+<p align="center">
+<img role="img" aria-label="A logtree tree where warning() and message() have become warn and info leaves" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDcwIDE5NyIgd2lkdGg9IjEwNzAiIGhlaWdodD0iMTk3IiByb2xlPSJpbWciIGFyaWEtbGFiZWw9ImxvZ3RyZWUgY29uc29sZSBvdXRwdXQgd2l0aCB3YXJuaW5nKCkgYW5kIG1lc3NhZ2UoKSByb3V0ZWQgaW50byB0aGUgdHJlZSI+Cjx0aXRsZT5SIGNvbmRpdGlvbnMgcm91dGVkIGludG8gdGhlIGxvZ3RyZWUgdHJlZTwvdGl0bGU+CjxyZWN0IHg9IjAuNSIgeT0iMC41IiB3aWR0aD0iMTA2OSIgaGVpZ2h0PSIxOTYiIHJ4PSI4IiBmaWxsPSIjZmZmZmZmIiBzdHJva2U9IiNkMGQ3ZGUiLz4KPGcgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIj4KPGxpbmUgeDE9IjIzLjkzIiB5MT0iMzUuMDAiIHgyPSIyMy45MyIgeTI9IjEwMS41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSIyMy45MyIgeTE9IjQ0LjUwIiB4Mj0iMzUuNzAiIHkyPSI0NC41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSIyMy45MyIgeTE9IjYzLjUwIiB4Mj0iMzUuNzAiIHkyPSI2My41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSIyMy45MyIgeTE9IjgyLjUwIiB4Mj0iMzUuNzAiIHkyPSI4Mi41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSIyMy45MyIgeTE9IjEwMS41MCIgeDI9IjM1LjcwIiB5Mj0iMTAxLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9nPgo8ZyBmb250LWZhbWlseT0idWktbW9ub3NwYWNlLCBTRk1vbm8tUmVndWxhciwgJnF1b3Q7U0YgTW9ubyZxdW90OywgTWVubG8sIENvbnNvbGFzLCBtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTMiPgo8dGV4dCB4PSIyMC4wMCIgeT0iMjkiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWI3YzgzIj7ilrY8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gUGFyc2UgYmF0Y2g8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iNDMuNTUiIHk9IjQ4IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzA5NjlkYSI+4oS5PC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IHVzaW5nIGNhY2hlZCBzY2hlbWE8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iNDMuNTUiIHk9IjY3IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzlhNjcwMCI+4pqgPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IDMgcm93cyBjb2VyY2VkIHRvIE5BPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjQzLjU1IiB5PSI4NiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYTdmMzciPuKclDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiAxLDIwMCByb3dzIHBhcnNlZDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI0My41NSIgeT0iMTA1IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzlhNjcwMCI+4pqgPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IERvbmUgIDAuODBzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjIwLjAwIiB5PSIxMjQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gUnVuIGNvbXBsZXRlIGluIDYuNTBzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjIwLjAwIiB5PSIxNjIiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj7ilIDilIAgU3VtbWFyeTogMSB3YXJuaW5nIOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSIyMC4wMCIgeT0iMTgxIiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzlhNjcwMCI+4pqgPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPlBhcnNlIGJhdGNoPC90c3Bhbj48dHNwYW4gZmlsbD0iIzhiOTQ5ZSI+IOKAuiA8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4zIHJvd3MgY29lcmNlZCB0byBOQTwvdHNwYW4+PC90ZXh0Pgo8L2c+CjxnIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsICZxdW90O1NlZ29lIFVJJnF1b3Q7LCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIj4KPGxpbmUgeDE9IjIxNi40MCIgeTE9IjQ0LjUwIiB4Mj0iNjk4LjAwIiB5Mj0iNDQuNTAiIHN0cm9rZT0iI2QwZDdkZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIxIDMiLz4KPGNpcmNsZSBjeD0iNzAyLjAwIiBjeT0iNDQuNTAiIHI9IjIiIGZpbGw9IiMwOTY5ZGEiLz4KPHRleHQgeD0iNzA4LjAwIiB5PSI0OC4xNyIgZmlsbD0iIzA5NjlkYSI+bWVzc2FnZSgpIGJlY29tZXMgYW4gaW5mbyBsZWFmLCBhdCB0aGUgZGVwdGggaXQgaGFwcGVuZWQ8L3RleHQ+CjxsaW5lIHgxPSIyMjQuMjUiIHkxPSI2My41MCIgeDI9IjY5OC4wMCIgeTI9IjYzLjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjcwMi4wMCIgY3k9IjYzLjUwIiByPSIyIiBmaWxsPSIjOWE2NzAwIi8+Cjx0ZXh0IHg9IjcwOC4wMCIgeT0iNjcuMTciIGZpbGw9IiM5YTY3MDAiPndhcm5pbmcoKSBiZWNvbWVzIGEgd2FybiBsZWFmIOKAlCBtdWZmbGVkLCBub3QgcmUtcmFpc2VkPC90ZXh0Pgo8bGluZSB4MT0iMTUzLjYwIiB5MT0iMTAxLjUwIiB4Mj0iNjk4LjAwIiB5Mj0iMTAxLjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjcwMi4wMCIgY3k9IjEwMS41MCIgcj0iMiIgZmlsbD0iIzlhNjcwMCIvPgo8dGV4dCB4PSI3MDguMDAiIHk9IjEwNS4xNyIgZmlsbD0iIzlhNjcwMCI+YW5kIGl0IGVsZXZhdGVzIGl0cyBzdGVwLCBleGFjdGx5IGFzIGxvZ193YXJuKCkgZG9lczwvdGV4dD4KPGxpbmUgeDE9IjY1Ni4wMCIgeTE9IjE1OC41MCIgeDI9IjY5OC4wMCIgeTI9IjE1OC41MCIgc3Ryb2tlPSIjZDBkN2RlIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjEgMyIvPgo8Y2lyY2xlIGN4PSI3MDIuMDAiIGN5PSIxNTguNTAiIHI9IjIiIGZpbGw9IiM4Yjk0OWUiLz4KPHRleHQgeD0iNzA4LjAwIiB5PSIxNjIuMTciIGZpbGw9IiM4Yjk0OWUiPnNvIGl0IHJlYWNoZXMgdGhlIGRpZ2VzdCBsaWtlIGFueSBvdGhlciB3YXJuaW5nPC90ZXh0Pgo8L2c+Cjwvc3ZnPgoK" alt="A logtree tree where warning() and message() have become warn and info leaves" width="1000" />
+</p>
+<div id="what-it-costs" class="section level3">
+<h3>What it costs</h3>
+<p>Routing means muffling. A routed condition stops at the leaf, so it
+no longer reaches <code>warnings()</code>, your own handlers, or stderr.
+The tree becomes the single record of the run – which is the point – but
+it is a trade, and a routed warning also elevates its enclosing step, so
+wrapping third-party code that warns freely will turn steps yellow.</p>
+<p>That is why it is opt-in, and why you can name one kind and not the
+other:</p>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>warnings =</code></th>
+<th><code>warning()</code></th>
+<th><code>message()</code></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>FALSE</code> (default)</td>
+<td>stderr, untouched</td>
+<td>stderr, untouched</td>
+</tr>
+<tr class="even">
+<td><code>TRUE</code></td>
+<td><code>log_warn()</code> leaf, muffled, elevates the step</td>
+<td><code>log_info()</code> leaf, muffled</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;warning&quot;</code></td>
+<td><code>log_warn()</code> leaf, muffled, elevates the step</td>
+<td>stderr, untouched</td>
+</tr>
+<tr class="even">
+<td><code>&quot;message&quot;</code></td>
+<td>stderr, untouched</td>
+<td><code>log_info()</code> leaf, muffled</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Reference:</strong> <code>with_logging()</code></p>
+</div>
+</div>
+<div id="manual-step-control" class="section level2">
+<h2>Manual step control</h2>
+<p><code>log_open()</code> opens a step and returns its id;
+<code>log_close()</code> closes it. They are the pair to reach for
+wherever there is no function frame to hang a close on – the top level
+of a script, a loop body, a block of a report.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>id <span class="ot">&lt;-</span> <span class="fu">log_open</span>(<span class="st">&quot;Import&quot;</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt; ▶ Import</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="fu">log_info</span>(<span class="st">&quot;reading three files&quot;</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ reading three files</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="fu">log_success</span>(<span class="st">&quot;9,412 rows&quot;</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ 9,412 rows</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="fu">log_close</span>(id)</span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+<p><code>log_close()</code> with no arguments closes the innermost open
+step, which is usually what you want; passing an id closes that specific
+one (and anything still open inside it). <code>status =</code> overrides
+the outcome, as in <a href="#status-elevation">Status elevation</a>
+above.</p>
+<p>Two shortcuts cover the common cases. Every leaf function takes
+<code>close = TRUE</code>, which logs the line and closes the step in
+one call:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>id <span class="ot">&lt;-</span> <span class="fu">log_open</span>(<span class="st">&quot;Publish&quot;</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt; ▶ Publish</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="fu">log_success</span>(<span class="st">&quot;pushed to production&quot;</span>, <span class="at">close =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; └─ ✔ pushed to production</span></span></code></pre></div>
+<p>And <code>log_step()</code> and <code>log_open()</code> take
+<code>parent =</code> for the rare case where a step belongs under
+something other than the innermost open node.</p>
+<div id="re-running-the-same-line" class="section level3">
+<h3>Re-running the same line</h3>
+<p>At the top level, a step is keyed on its own source location.
+Re-running the same <code>log_open()</code> line in RStudio or Positron
+therefore re-anchors to the same node rather than nesting a level deeper
+on every run – so an interactive session where you keep re-evaluating a
+block does not walk off the right edge of the console.</p>
+<p><strong>Reference:</strong> <code>log_open()</code>,
+<code>log_close()</code>, <code>log_step()</code></p>
+</div>
 </div>
 <div id="grouping" class="section level2">
 <h2>Grouping</h2>
-<p><code>log_step(label, group = value)</code> collapses adjacent steps
-that share the same <code>value</code> under one synthetic header,
-instead of nesting each step on its own. Here several files belong to
-the same dataset, so each dataset becomes a header and its files sit
-underneath. The group stays open across calls with a matching value and
-only closes – as a sibling, with its own status aggregated from its
-members – once a step with a different value (or a plain ungrouped step)
-appears at the same level, or the enclosing step finishes. Grouping is
-strictly adjacency-based: the same value recurring later, after
-something else has closed the group, opens a fresh one rather than
-reusing the old header.</p>
-<p>Pass a bare <code>value</code> to use it as both the match key and
-the header, or <code>c(name = value)</code> to show a fixed
-<code>name</code> while still grouping on <code>value</code>.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>load_file <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset, file) {</span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">log_step</span>(file, <span class="at">group =</span> dataset)</span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;Reading rows&quot;</span>)</span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;Merged into dataset&quot;</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>}</span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>import_datasets <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Import datasets&quot;</span>)</span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;sales&quot;</span>,   <span class="st">&quot;2023.csv&quot;</span>)</span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;sales&quot;</span>,   <span class="st">&quot;2024.csv&quot;</span>)</span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;returns&quot;</span>, <span class="st">&quot;2024.csv&quot;</span>)</span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a>}</span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a></span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="fu">import_datasets</span>()</span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; ▶ Import datasets</span></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; ├─ ▣ sales</span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2023.csv</span></span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ Reading rows</span></span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ Merged into dataset</span></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2024.csv</span></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ Reading rows</span></span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ Merged into dataset</span></span>
-<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
-<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
-<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt; ├─ ▣ returns</span></span>
-<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2024.csv</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ Reading rows</span></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ Merged into dataset</span></span>
-<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
-<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
-</div>
-<div id="themes" class="section level2">
-<h2>Themes</h2>
-<p>Three built-in presets are available: <code>&quot;unicode&quot;</code>
-(default), <code>&quot;ascii&quot;</code> (safe for log files, CI, and non-UTF-8
-terminals), and <code>&quot;emoji&quot;</code>. Every glyph is overridable, and
-switching themes never breaks column alignment, since each glyph
-declares its own rendered width rather than having that width measured
-from the string.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;ascii&quot;</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; &gt; Pipeline</span></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; |- &gt; Load config</span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; |  |- i Reading config.yml</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; |  |- + Validated 12 parameters</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; |  |- + Done  0.00s</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; |- + Done  0.00s</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
-<p>Individual glyph slots can be overridden with <code>overrides</code>
-– a named list keyed by slot, each element holding only the fields to
-change (everything else is kept from the active theme):</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>, <span class="at">overrides =</span> <span class="fu">list</span>(</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>  <span class="at">success =</span> <span class="fu">list</span>(<span class="at">glyph =</span> <span class="st">&quot;*&quot;</span>, <span class="at">color =</span> <span class="fu">c</span>(<span class="st">&quot;green&quot;</span>, <span class="st">&quot;bold&quot;</span>)),</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>  <span class="at">group   =</span> <span class="fu">list</span>(<span class="at">bracket =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>))</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
-<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ Reading config.yml</span></span>
-<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; │  ├─ * Validated 12 parameters</span></span>
-<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; │  └─ * Done  0.00s</span></span>
-<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; └─ * Done  0.00s</span></span>
-<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
-<p><strong>Accepted slots</strong> (valid names in an
-<code>overrides</code> list):</p>
-<table>
-<colgroup>
-<col width="12%" />
-<col width="32%" />
-<col width="54%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Slot</th>
-<th>Applies to</th>
-<th>Fields it accepts</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>step</code></td>
-<td>open / running step glyph</td>
-<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
-</tr>
-<tr class="even">
-<td><code>info</code></td>
-<td><code>log_info()</code> leaf</td>
-<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
-</tr>
-<tr class="odd">
-<td><code>debug</code></td>
-<td><code>log_debug()</code> leaf</td>
-<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
-</tr>
-<tr class="even">
-<td><code>success</code></td>
-<td>success glyph (clean close, <code>log_success()</code>)</td>
-<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
-</tr>
-<tr class="odd">
-<td><code>warning</code></td>
-<td><code>log_warn()</code> / elevated step glyph</td>
-<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
-</tr>
-<tr class="even">
-<td><code>error</code></td>
-<td><code>log_error()</code> / elevated step glyph</td>
-<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
-</tr>
-<tr class="odd">
-<td><code>interrupted</code></td>
-<td>abnormal-exit (dimmed) glyph</td>
-<td><code>glyph</code>, <code>width</code>, <code>color</code></td>
-</tr>
-<tr class="even">
-<td><code>group</code></td>
-<td>group header marker</td>
-<td><code>glyph</code>, <code>color</code>, <code>bracket</code></td>
-</tr>
-<tr class="odd">
-<td><code>branch</code></td>
-<td>child connector (<code>├─</code>)</td>
-<td><code>glyph</code>, <code>color</code></td>
-</tr>
-<tr class="even">
-<td><code>corner</code></td>
-<td>close-line connector (<code>└─</code>)</td>
-<td><code>glyph</code>, <code>color</code></td>
-</tr>
-<tr class="odd">
-<td><code>pipe</code></td>
-<td>vertical rail (<code>│</code>)</td>
-<td><code>glyph</code>, <code>color</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Accepted fields</strong> (valid names inside a slot):</p>
-<table>
-<colgroup>
-<col width="20%" />
-<col width="16%" />
-<col width="62%" />
-</colgroup>
-<thead>
-<tr class="header">
-<th>Field</th>
-<th>Type</th>
-<th>Accepted values</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><code>glyph</code></td>
-<td><code>character(1)</code></td>
-<td>Any string, including <code>&quot;&quot;</code>.</td>
-</tr>
-<tr class="even">
-<td><code>width</code></td>
-<td><code>integer(1)</code></td>
-<td>Rendered display width of the glyph (<code>1</code> normal,
-<code>2</code> emoji/wide). Sets column alignment; status slots
-only.</td>
-</tr>
-<tr class="odd">
-<td><code>color</code></td>
-<td><code>character</code> / <code>NULL</code></td>
-<td>One or more cli styles, or <code>NULL</code>. Named
-(<code>&quot;red&quot;</code>, <code>&quot;cyan&quot;</code>, …), bright
-(<code>&quot;br_red&quot;</code>), backgrounds (<code>&quot;bg_blue&quot;</code>), styles
-(<code>&quot;bold&quot;</code>, <code>&quot;dim&quot;</code>, <code>&quot;italic&quot;</code>), or hex
-(<code>&quot;#ff8800&quot;</code>). A vector combines them,
-e.g. <code>c(&quot;red&quot;, &quot;bold&quot;)</code>.</td>
-</tr>
-<tr class="even">
-<td><code>bracket</code></td>
-<td><code>logical(1)</code></td>
-<td><code>group</code> slot only. <code>TRUE</code> wraps the header
-name in <code>&lt; &gt;</code>.</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="output-sinks" class="section level2">
-<h2>Output sinks</h2>
-<p>The console sink is always on. <code>logtree_sink_file()</code> adds
-a plain-text or NDJSON file sink; every logged event fans out to all
-active sinks simultaneously.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>log_path <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.log&quot;</span>)</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">logtree_sink_file</span>(log_path, <span class="at">format =</span> <span class="st">&quot;text&quot;</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ Reading config.yml</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ Validated 12 parameters</span></span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="fu">writeLines</span>(<span class="fu">readLines</span>(log_path))</span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; &gt; Pipeline</span></span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; |- &gt; Load config</span></span>
-<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; |  |- i Reading config.yml</span></span>
-<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; |  |- + Validated 12 parameters</span></span>
-<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt; |  |- + Done  0.00s</span></span>
-<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; |- + Done  0.00s</span></span></code></pre></div>
+<p>Sometimes a run has twenty steps that are all the same <em>kind</em>
+of thing, and nesting each on its own line buries the structure.
+<code>group =</code> collapses adjacent steps that share a value under
+one header:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>load_file <span class="ot">&lt;-</span> <span class="cf">function</span>(dataset, file) {</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">log_step</span>(file, <span class="at">group =</span> dataset)</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;reading rows&quot;</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;merged&quot;</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>}</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a>import_datasets <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Import datasets&quot;</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;sales&quot;</span>,   <span class="st">&quot;2023.csv&quot;</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;sales&quot;</span>,   <span class="st">&quot;2024.csv&quot;</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" tabindex="-1"></a>  <span class="fu">load_file</span>(<span class="st">&quot;returns&quot;</span>, <span class="st">&quot;2024.csv&quot;</span>)</span>
+<span id="cb13-14"><a href="#cb13-14" tabindex="-1"></a>}</span>
+<span id="cb13-15"><a href="#cb13-15" tabindex="-1"></a></span>
+<span id="cb13-16"><a href="#cb13-16" tabindex="-1"></a><span class="fu">import_datasets</span>()</span>
+<span id="cb13-17"><a href="#cb13-17" tabindex="-1"></a><span class="co">#&gt; ▶ Import datasets</span></span>
+<span id="cb13-18"><a href="#cb13-18" tabindex="-1"></a><span class="co">#&gt; ├─ ▣ sales</span></span>
+<span id="cb13-19"><a href="#cb13-19" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2023.csv</span></span>
+<span id="cb13-20"><a href="#cb13-20" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ reading rows</span></span>
+<span id="cb13-21"><a href="#cb13-21" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ merged</span></span>
+<span id="cb13-22"><a href="#cb13-22" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
+<span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2024.csv</span></span>
+<span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ reading rows</span></span>
+<span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ merged</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
+<span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a><span class="co">#&gt; ├─ ▣ returns</span></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a><span class="co">#&gt; │  ├─ ▶ 2024.csv</span></span>
+<span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ℹ reading rows</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a><span class="co">#&gt; │  │  ├─ ✔ merged</span></span>
+<span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a><span class="co">#&gt; │  │  └─ ✔ Done  0.00s</span></span>
+<span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
+<p>Pass a bare value to use it as both the match key and the header, or
+<code>c(name = value)</code> to show a fixed <code>name</code> while
+grouping on <code>value</code>.</p>
+<p>The rule that catches people out is adjacency – a value that comes
+back later opens a <em>second</em> header rather than rejoining the
+first:</p>
+<p align="center">
+<img role="img" aria-label="A logtree tree showing adjacent steps grouped under one header and a non-adjacent recurrence opening a second" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDYgNDA2IiB3aWR0aD0iNjQ2IiBoZWlnaHQ9IjQwNiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJBIGxvZ3RyZWUgdHJlZSBzaG93aW5nIGFkamFjZW50IHN0ZXBzIGdyb3VwZWQgdW5kZXIgb25lIGhlYWRlciBhbmQgYSBub24tYWRqYWNlbnQgcmVjdXJyZW5jZSBvcGVuaW5nIGEgc2Vjb25kIj4KPHRpdGxlPkdyb3VwaW5nIGlzIGFkamFjZW5jeS1iYXNlZDwvdGl0bGU+CjxyZWN0IHg9IjAuNSIgeT0iMC41IiB3aWR0aD0iNjQ1IiBoZWlnaHQ9IjQwNSIgcng9IjgiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iI2QwZDdkZSIvPgo8ZyBzdHJva2UtbGluZWNhcD0icm91bmQiPgo8bGluZSB4MT0iNzEuMDIiIHkxPSI3My4wMCIgeDI9IjcxLjAyIiB5Mj0iMTAxLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjcxLjAyIiB5MT0iMTMwLjAwIiB4Mj0iNzEuMDIiIHkyPSIxNTguNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iNDcuNDciIHkxPSI1NC4wMCIgeDI9IjQ3LjQ3IiB5Mj0iMTc3LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjcxLjAyIiB5MT0iMjI1LjAwIiB4Mj0iNzEuMDIiIHkyPSIyNTMuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iNDcuNDciIHkxPSIyMDYuMDAiIHgyPSI0Ny40NyIgeTI9IjI3Mi41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSI3MS4wMiIgeTE9IjMyMC4wMCIgeDI9IjcxLjAyIiB5Mj0iMzQ4LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjQ3LjQ3IiB5MT0iMzAxLjAwIiB4Mj0iNDcuNDciIHkyPSIzNjcuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iMjMuOTMiIHkxPSIzNS4wMCIgeDI9IjIzLjkzIiB5Mj0iMzg2LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjIzLjkzIiB5MT0iNDQuNTAiIHgyPSIzNS43MCIgeTI9IjQ0LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjQ3LjQ3IiB5MT0iNjMuNTAiIHgyPSI1OS4yNSIgeTI9IjYzLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjcxLjAyIiB5MT0iODIuNTAiIHgyPSI4Mi44MCIgeTI9IjgyLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjcxLjAyIiB5MT0iMTAxLjUwIiB4Mj0iODIuODAiIHkyPSIxMDEuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iNDcuNDciIHkxPSIxMjAuNTAiIHgyPSI1OS4yNSIgeTI9IjEyMC41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSI3MS4wMiIgeTE9IjEzOS41MCIgeDI9IjgyLjgwIiB5Mj0iMTM5LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjcxLjAyIiB5MT0iMTU4LjUwIiB4Mj0iODIuODAiIHkyPSIxNTguNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iNDcuNDciIHkxPSIxNzcuNTAiIHgyPSI1OS4yNSIgeTI9IjE3Ny41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSIyMy45MyIgeTE9IjE5Ni41MCIgeDI9IjM1LjcwIiB5Mj0iMTk2LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjQ3LjQ3IiB5MT0iMjE1LjUwIiB4Mj0iNTkuMjUiIHkyPSIyMTUuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iNzEuMDIiIHkxPSIyMzQuNTAiIHgyPSI4Mi44MCIgeTI9IjIzNC41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSI3MS4wMiIgeTE9IjI1My41MCIgeDI9IjgyLjgwIiB5Mj0iMjUzLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjQ3LjQ3IiB5MT0iMjcyLjUwIiB4Mj0iNTkuMjUiIHkyPSIyNzIuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iMjMuOTMiIHkxPSIyOTEuNTAiIHgyPSIzNS43MCIgeTI9IjI5MS41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSI0Ny40NyIgeTE9IjMxMC41MCIgeDI9IjU5LjI1IiB5Mj0iMzEwLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjcxLjAyIiB5MT0iMzI5LjUwIiB4Mj0iODIuODAiIHkyPSIzMjkuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iNzEuMDIiIHkxPSIzNDguNTAiIHgyPSI4Mi44MCIgeTI9IjM0OC41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSI0Ny40NyIgeTE9IjM2Ny41MCIgeDI9IjU5LjI1IiB5Mj0iMzY3LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9IjIzLjkzIiB5MT0iMzg2LjUwIiB4Mj0iMzUuNzAiIHkyPSIzODYuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L2c+CjxnIGZvbnQtZmFtaWx5PSJ1aS1tb25vc3BhY2UsIFNGTW9uby1SZWd1bGFyLCAmcXVvdDtTRiBNb25vJnF1b3Q7LCBNZW5sbywgQ29uc29sYXMsIG1vbm9zcGFjZSIgZm9udC1zaXplPSIxMyI+Cjx0ZXh0IHg9IjIwLjAwIiB5PSIyOSIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYjdjODMiPuKWtjwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiBJbXBvcnQ8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iNDMuNTUiIHk9IjQ4IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzgyNTBkZiI+4pajIHNhbGVzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjY3LjEwIiB5PSI2NyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYjdjODMiPuKWtjwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiAyMDIzLmNzdjwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI5MC42NSIgeT0iODYiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gbWVyZ2VkPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjkwLjY1IiB5PSIxMDUiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gRG9uZSAgMy42MHM8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iNjcuMTAiIHk9IjEyNCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYjdjODMiPuKWtjwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiAyMDI0LmNzdjwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI5MC42NSIgeT0iMTQzIiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IG1lcmdlZDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI5MC42NSIgeT0iMTYyIiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IERvbmUgIDEuNDBzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjY3LjEwIiB5PSIxODEiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gRG9uZSAgOS4xMHM8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iNDMuNTUiIHk9IjIwMCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiM4MjUwZGYiPuKWoyByZXR1cm5zPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjY3LjEwIiB5PSIyMTkiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWI3YzgzIj7ilrY8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gMjAyNC5jc3Y8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iOTAuNjUiIHk9IjIzOCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYTdmMzciPuKclDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiBtZXJnZWQ8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iOTAuNjUiIHk9IjI1NyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYTdmMzciPuKclDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiBEb25lICAxLjIwczwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI2Ny4xMCIgeT0iMjc2IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IERvbmUgIDYuMjBzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjQzLjU1IiB5PSIyOTUiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjODI1MGRmIj7ilqMgc2FsZXM8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iNjcuMTAiIHk9IjMxNCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYjdjODMiPuKWtjwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiAyMDI1LmNzdjwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI5MC42NSIgeT0iMzMzIiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IG1lcmdlZDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI5MC42NSIgeT0iMzUyIiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IERvbmUgIDMuNjBzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjY3LjEwIiB5PSIzNzEiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gRG9uZSAgNS42MHM8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iNDMuNTUiIHk9IjM5MCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiMxYTdmMzciPuKclDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiBEb25lICAyNy4zMHM8L3RzcGFuPjwvdGV4dD4KPC9nPgo8ZyBmb250LWZhbWlseT0iLWFwcGxlLXN5c3RlbSwgQmxpbmtNYWNTeXN0ZW1Gb250LCAmcXVvdDtTZWdvZSBVSSZxdW90OywgSGVsdmV0aWNhLCBBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxMSI+CjxsaW5lIHgxPSIxNTMuNjAiIHkxPSI2My41MCIgeDI9IjI0My4wMCIgeTI9IjYzLjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjI0Ny4wMCIgY3k9IjYzLjUwIiByPSIyIiBmaWxsPSIjODI1MGRmIi8+Cjx0ZXh0IHg9IjI1My4wMCIgeT0iNjcuMTciIGZpbGw9IiM4MjUwZGYiPmFkamFjZW50IHN0ZXBzIHNoYXJpbmcgYSB2YWx1ZSBjb2xsYXBzZSB1bmRlciBvbmUgaGVhZGVyPC90ZXh0Pgo8bGluZSB4MT0iMTIyLjIwIiB5MT0iMTk2LjUwIiB4Mj0iMjQzLjAwIiB5Mj0iMTk2LjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjI0Ny4wMCIgY3k9IjE5Ni41MCIgcj0iMiIgZmlsbD0iIzgyNTBkZiIvPgo8dGV4dCB4PSIyNTMuMDAiIHk9IjIwMC4xNyIgZmlsbD0iIzgyNTBkZiI+YSBkaWZmZXJlbnQgdmFsdWUgc2V0dGxlcyB0aGUgb3BlbiBncm91cCBhbmQgc3RhcnRzIGEgbmV3IG9uZTwvdGV4dD4KPGxpbmUgeDE9IjEwNi41MCIgeTE9IjI5MS41MCIgeDI9IjI0My4wMCIgeTI9IjI5MS41MCIgc3Ryb2tlPSIjZDBkN2RlIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjEgMyIvPgo8Y2lyY2xlIGN4PSIyNDcuMDAiIGN5PSIyOTEuNTAiIHI9IjIiIGZpbGw9IiNjZjIyMmUiLz4KPHRleHQgeD0iMjUzLjAwIiB5PSIyOTUuMTciIGZpbGw9IiNjZjIyMmUiPnNhbGVzIHJlY3VycywgYnV0IG5vdCBhZGphY2VudGx5IOKAlCBzbyBpdCBvcGVucyBhIGZyZXNoIGhlYWRlcjwvdGV4dD4KPC9nPgo8L3N2Zz4KCg==" alt="A logtree tree showing adjacent steps grouped under one header and a non-adjacent recurrence opening a second" width="720" />
+</p>
+<p>Three properties are worth knowing:</p>
+<ul>
+<li><strong>Grouping is adjacency-based.</strong> A group stays open
+across calls with a matching value and closes as soon as something else
+appears at its level – a step with a different value, a plain ungrouped
+step, or a leaf. The same value recurring later opens a <em>fresh</em>
+group rather than reopening the old header. This keeps the tree in
+chronological order; a global grouping would have to reorder the run to
+be useful.</li>
+<li><strong>A group is not tied to a frame.</strong> It lingers after
+its last member closes, waiting to see whether the next entry joins it,
+and is popped when the enclosing step finishes.</li>
+<li><strong>A group’s status is aggregated from its members.</strong> If
+one file fails, the group’s own close line carries the error glyph, so a
+collapsed group never hides a failure inside it.</li>
+</ul>
+<p><strong>Reference:</strong> <code>log_step()</code>,
+<code>log_open()</code> · <strong>Example:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#importing-many-files">Importing
+many files</a></p>
 </div>
 <div id="verbosity" class="section level2">
 <h2>Verbosity</h2>
-<p><code>logtree_threshold()</code> sets the minimum leaf-line level to
-render (<code>&quot;debug&quot;</code>, <code>&quot;info&quot;</code>, <code>&quot;warn&quot;</code>,
-<code>&quot;error&quot;</code>). Step open/close lines always render regardless of
-verbosity, since hiding them would break the tree structure; a
-suppressed <code>log_warn()</code>/<code>log_error()</code> still
-elevates the enclosing step’s close glyph.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;warn&quot;</span>)</span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">fetch_articles</span>()</span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching articles</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ Retry 1/3 due to timeout</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;info&quot;</span>)</span></code></pre></div>
-<p><code>log_debug()</code> is the most verbose level, for fine-grained
-diagnostic detail. It’s hidden by default (verbosity is
-<code>&quot;info&quot;</code>) and only shown when
-<code>logtree_threshold(&quot;debug&quot;)</code> is called. Like
-<code>log_info()</code> and <code>log_success()</code>, it does not
-elevate the enclosing step’s status.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a></span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a>fetch_verbose <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Fetching&quot;</span>)</span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>  <span class="fu">log_debug</span>(<span class="st">&quot;cache miss for key user:42&quot;</span>)</span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;connecting to API&quot;</span>)</span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a>  <span class="fu">log_debug</span>(<span class="st">&quot;request took 84ms&quot;</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;fetched 12 records&quot;</span>)</span>
-<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a>}</span>
-<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a></span>
-<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co"># At default verbosity, debug lines are hidden</span></span>
-<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="fu">fetch_verbose</span>()</span>
-<span id="cb11-13"><a href="#cb11-13" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching</span></span>
-<span id="cb11-14"><a href="#cb11-14" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ connecting to API</span></span>
-<span id="cb11-15"><a href="#cb11-15" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 12 records</span></span>
-<span id="cb11-16"><a href="#cb11-16" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
-<span id="cb11-17"><a href="#cb11-17" tabindex="-1"></a></span>
-<span id="cb11-18"><a href="#cb11-18" tabindex="-1"></a><span class="co"># Raise verbosity to show debug lines</span></span>
-<span id="cb11-19"><a href="#cb11-19" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;debug&quot;</span>)</span>
-<span id="cb11-20"><a href="#cb11-20" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
-<span id="cb11-21"><a href="#cb11-21" tabindex="-1"></a><span class="fu">fetch_verbose</span>()</span>
-<span id="cb11-22"><a href="#cb11-22" tabindex="-1"></a><span class="co">#&gt; ▶ Fetching</span></span>
-<span id="cb11-23"><a href="#cb11-23" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ cache miss for key user:42</span></span>
-<span id="cb11-24"><a href="#cb11-24" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ connecting to API</span></span>
-<span id="cb11-25"><a href="#cb11-25" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ request took 84ms</span></span>
-<span id="cb11-26"><a href="#cb11-26" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 12 records</span></span>
-<span id="cb11-27"><a href="#cb11-27" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
-<span id="cb11-28"><a href="#cb11-28" tabindex="-1"></a></span>
-<span id="cb11-29"><a href="#cb11-29" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;info&quot;</span>)</span></code></pre></div>
+<p><code>logtree_threshold()</code> sets the minimum leaf level to
+render: <code>&quot;debug&quot;</code>, <code>&quot;info&quot;</code> (the default),
+<code>&quot;warn&quot;</code>, or <code>&quot;error&quot;</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>fetch_verbose <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Fetch&quot;</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>  <span class="fu">log_debug</span>(<span class="st">&quot;cache miss for key user:42&quot;</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;connecting to API&quot;</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;fetched 12 records&quot;</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a>}</span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" tabindex="-1"></a><span class="fu">fetch_verbose</span>()                  <span class="co"># default: the debug line is hidden</span></span>
+<span id="cb14-11"><a href="#cb14-11" tabindex="-1"></a><span class="co">#&gt; ▶ Fetch</span></span>
+<span id="cb14-12"><a href="#cb14-12" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ connecting to API</span></span>
+<span id="cb14-13"><a href="#cb14-13" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 12 records</span></span>
+<span id="cb14-14"><a href="#cb14-14" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb14-15"><a href="#cb14-15" tabindex="-1"></a></span>
+<span id="cb14-16"><a href="#cb14-16" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;debug&quot;</span>)</span>
+<span id="cb14-17"><a href="#cb14-17" tabindex="-1"></a><span class="fu">fetch_verbose</span>()                  <span class="co"># raised: it appears</span></span>
+<span id="cb14-18"><a href="#cb14-18" tabindex="-1"></a><span class="co">#&gt; ▶ Fetch</span></span>
+<span id="cb14-19"><a href="#cb14-19" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ cache miss for key user:42</span></span>
+<span id="cb14-20"><a href="#cb14-20" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ connecting to API</span></span>
+<span id="cb14-21"><a href="#cb14-21" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 12 records</span></span>
+<span id="cb14-22"><a href="#cb14-22" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a></span>
+<span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;info&quot;</span>)</span></code></pre></div>
+<p>Two rules keep this from doing damage:</p>
+<ul>
+<li><strong>Step open and close lines are never gated.</strong> Hiding
+them would break the tree structure, so a threshold only ever removes
+leaves.</li>
+<li><strong>Verbosity is a rendering gate, not a recording one.</strong>
+A <code>log_warn()</code> suppressed by
+<code>logtree_threshold(&quot;error&quot;)</code> still elevates its step’s close
+glyph and still reaches the run digest. What you chose not to print is
+not the same as what did not happen.</li>
+</ul>
+<p><code>logtree_threshold()</code> is only the <em>default</em>. Each
+sink can pin a level of its own, so a debug-level log file does not drag
+the console down with it – see <a href="#output-sinks">Output
+sinks</a>.</p>
+<p><strong>Reference:</strong> <code>logtree_threshold()</code></p>
 </div>
-<div id="integrating-with-the-logger-package" class="section level2">
-<h2>Integrating with the <code>logger</code> package</h2>
-<p>If your codebase already uses the CRAN <code>logger</code> package
-(<a href="https://daroczig.github.io/logger/" class="uri">https://daroczig.github.io/logger/</a>) for logging, you can
-route those calls through <code>logtree</code> without rewriting them.
-Call <code>logtree_logger()</code> once near the top of your script: it
-registers <code>logtree</code>’s custom layout, pairs it with
-<code>logger::appender_void</code> (a no-op appender) so
-<code>logtree</code> does the rendering, and opens <code>logger</code>’s
-own threshold so that <code>logtree_threshold()</code> becomes the
-single gate on what is shown.</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;debug&quot;</span>)  <span class="co"># the only gate, now that logtree_logger() opened logger&#39;s</span></span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a></span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>ns <span class="ot">&lt;-</span> <span class="st">&quot;my_app&quot;</span></span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="fu">logtree_logger</span>(<span class="at">namespace =</span> ns)</span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>process_data <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Processing data&quot;</span>)</span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_info</span>(<span class="st">&quot;reading input file&quot;</span>, <span class="at">namespace =</span> ns)</span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_debug</span>(<span class="st">&quot;parsed 5,000 rows&quot;</span>, <span class="at">namespace =</span> ns)</span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_success</span>(<span class="st">&quot;transformation complete&quot;</span>, <span class="at">namespace =</span> ns)</span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>}</span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a></span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a><span class="fu">process_data</span>()</span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a><span class="co">#&gt; ▶ Processing data</span></span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ reading input file</span></span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ parsed 5,000 rows</span></span>
-<span id="cb12-18"><a href="#cb12-18" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ transformation complete</span></span>
-<span id="cb12-19"><a href="#cb12-19" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
-<p><code>logger</code> severities map onto logtree leaf levels:
-<code>FATAL</code>/<code>ERROR</code> become [log_error()],
-<code>WARN</code> becomes [log_warn()], <code>SUCCESS</code> becomes
-[log_success()], <code>INFO</code> becomes [log_info()], and
-<code>DEBUG</code>/<code>TRACE</code> both become [log_debug()] (logger
-has two debug-ish tiers, logtree has one). Note that
-<code>logger</code>’s own <code>log_threshold()</code> and
-<code>logtree_threshold()</code> are two independent gates applied on
-top of each other – both apply simultaneously, which is intentional.</p>
+<div id="the-run-digest" class="section level2">
+<h2>The run digest</h2>
+<p>A long tree scrolls. <code>logtree_summary()</code> prints a digest
+of everything that went wrong since the last
+<code>logtree_reset()</code> – every warning, error, and interrupted
+step, plus any line pinned with <code>summary = TRUE</code> – each with
+a breadcrumb showing where in the tree it happened.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>migrate <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Apply migration&quot;</span>)</span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a>  <span class="fu">log_warn</span>(<span class="st">&quot;table lock held 800ms&quot;</span>)</span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a>  <span class="fu">log_error</span>(<span class="st">&quot;constraint violation on users.email&quot;</span>)</span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a>}</span>
+<span id="cb15-8"><a href="#cb15-8" tabindex="-1"></a></span>
+<span id="cb15-9"><a href="#cb15-9" tabindex="-1"></a>smoke_test <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb15-10"><a href="#cb15-10" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Smoke test&quot;</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" tabindex="-1"></a>  <span class="fu">log_success</span>(<span class="st">&quot;all endpoints 200&quot;</span>)</span>
+<span id="cb15-12"><a href="#cb15-12" tabindex="-1"></a>}</span>
+<span id="cb15-13"><a href="#cb15-13" tabindex="-1"></a></span>
+<span id="cb15-14"><a href="#cb15-14" tabindex="-1"></a>release <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb15-15"><a href="#cb15-15" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Release v2.1&quot;</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" tabindex="-1"></a>  <span class="fu">migrate</span>()</span>
+<span id="cb15-17"><a href="#cb15-17" tabindex="-1"></a>  <span class="fu">smoke_test</span>()</span>
+<span id="cb15-18"><a href="#cb15-18" tabindex="-1"></a>}</span>
+<span id="cb15-19"><a href="#cb15-19" tabindex="-1"></a></span>
+<span id="cb15-20"><a href="#cb15-20" tabindex="-1"></a><span class="fu">with_logging</span>(<span class="fu">release</span>(), <span class="at">summary =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb15-21"><a href="#cb15-21" tabindex="-1"></a><span class="co">#&gt; ▶ Release v2.1</span></span>
+<span id="cb15-22"><a href="#cb15-22" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Apply migration</span></span>
+<span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="co">#&gt; │  ├─ ⚠ table lock held 800ms</span></span>
+<span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✖ constraint violation on users.email</span></span>
+<span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a><span class="co">#&gt; │  └─ ✖ Done  0.00s</span></span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Smoke test</span></span>
+<span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ all endpoints 200</span></span>
+<span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a><span class="fu">logtree_summary</span>()</span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a><span class="co">#&gt; ── Summary: 1 error, 1 warning ─────────────────────────────────────────────────</span></span>
+<span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a><span class="co">#&gt; ⚠ Release v2.1 › Apply migration › table lock held 800ms</span></span>
+<span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a><span class="co">#&gt; ✖ Release v2.1 › Apply migration › constraint violation on users.email</span></span></code></pre></div>
+<p>Two different things are called a summary here, and it is worth
+keeping them apart:</p>
+<ul>
+<li><strong>The run summary line</strong> –
+<code>Run complete in 0.15s</code>, or <code>Run failed in ...</code> –
+is printed by <code>with_logging()</code> itself. Its
+<code>summary =</code> argument controls that one line, and nothing
+else. The example above passes <code>summary = FALSE</code> purely to
+keep the output tidy.</li>
+<li><strong>The digest</strong> is the block above, and it only appears
+when you call <code>logtree_summary()</code>. It is never printed for
+you, because what belongs in it depends on the run: a script wants it at
+the end, a test wants it not at all.</li>
+</ul>
+<p>The digest also survives things the tree does not. A warning hidden
+by <code>logtree_threshold(&quot;error&quot;)</code> still reaches it, and so does
+one from a muted run.</p>
+<p>Three arguments shape it: <code>filter</code> restricts to given
+statuses, <code>depth</code> trims each breadcrumb to its N deepest
+nodes (useful when the tree is deep and the full path is noise), and
+<code>trace</code> pins the call-site column for this one call.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="fu">logtree_summary</span>(<span class="at">filter =</span> <span class="st">&quot;error&quot;</span>, <span class="at">depth =</span> <span class="dv">1</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="co">#&gt; ── Summary: 1 error ────────────────────────────────────────────────────────────</span></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a><span class="co">#&gt; ✖ constraint violation on users.email</span></span></code></pre></div>
+<p><strong>Reference:</strong> <code>logtree_summary()</code>,
+<code>logtree_reset()</code> · <strong>Example:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#a-migration-that-fails">A
+migration that fails</a></p>
+</div>
+<div id="call-sites" class="section level2">
+<h2>Call sites</h2>
+<p>The digest says <em>what</em> went wrong. The <code>trace</code>
+theme slot says <em>where</em>: it annotates lines with
+<code>file.R:line fn()</code>, and the location is a terminal hyperlink,
+so a click opens your editor at that line.</p>
+<p>It is off in every preset, because capturing a call site costs a
+frame walk per logged line. <code>show = &quot;problems&quot;</code> is the usual
+setting – warnings, errors, and interrupted steps, which is where you
+actually want a location:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="fu">list</span>(<span class="at">trace =</span> <span class="fu">list</span>(<span class="at">show =</span> <span class="st">&quot;problems&quot;</span>, <span class="at">format =</span> <span class="st">&quot;{fn}()&quot;</span>)))</span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a>flaky <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Parse rows&quot;</span>)</span>
+<span id="cb17-6"><a href="#cb17-6" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;1,200 rows&quot;</span>)</span>
+<span id="cb17-7"><a href="#cb17-7" tabindex="-1"></a>  <span class="fu">log_warn</span>(<span class="st">&quot;coerced 3 rows&quot;</span>)</span>
+<span id="cb17-8"><a href="#cb17-8" tabindex="-1"></a>}</span>
+<span id="cb17-9"><a href="#cb17-9" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" tabindex="-1"></a><span class="fu">flaky</span>()</span>
+<span id="cb17-11"><a href="#cb17-11" tabindex="-1"></a><span class="co">#&gt; ▶ Parse rows</span></span>
+<span id="cb17-12"><a href="#cb17-12" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ 1,200 rows</span></span>
+<span id="cb17-13"><a href="#cb17-13" tabindex="-1"></a><span class="co">#&gt; ├─ ⚠ coerced 3 rows  flaky()</span></span>
+<span id="cb17-14"><a href="#cb17-14" tabindex="-1"></a><span class="co">#&gt; └─ ⚠ Done  0.00s</span></span>
+<span id="cb17-15"><a href="#cb17-15" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
+<p><code>show</code> also takes the statuses themselves –
+<code>&quot;running&quot;</code> for open lines, plus <code>&quot;info&quot;</code>,
+<code>&quot;debug&quot;</code>, <code>&quot;success&quot;</code>, <code>&quot;warning&quot;</code>,
+<code>&quot;error&quot;</code>, <code>&quot;interrupted&quot;</code> – so
+<code>show = &quot;error&quot;</code> annotates errors and leaves tolerated
+warnings bare. <code>TRUE</code> marks every line that can carry one. An
+ordinary close line never carries a call site whatever you name, since
+its site is its own open line’s, two rows up.</p>
+<p><code>format</code> is a template over three placeholders –
+<code>{fn}</code> for the enclosing function’s name, <code>{file}</code>
+and <code>{line}</code> for where the log call sits – and defaults to
+<code>&quot;{file}:{line} {fn}()&quot;</code>.</p>
+<p>The example above pins <code>&quot;{fn}()&quot;</code> because the vignette
+cannot show the other two. <code>{file}</code> and <code>{line}</code>
+are read from R’s source references, which only exist when the code was
+parsed with <code>keep.source = TRUE</code>: the default interactively
+and under <code>devtools::load_all()</code>, but not under plain
+<code>Rscript</code>, and not in a knitted chunk. Rather than print
+<code>NA</code>, the template is split on whitespace and any run whose
+placeholders are <em>all</em> unavailable is dropped whole – so the
+default degrades to a bare <code>flaky()</code> here instead of
+<code>NA:NA flaky()</code>.</p>
+<p>Run from a sourced script, where the source references are there, the
+same default prints in full (<code>show = TRUE</code> here, to annotate
+every line):</p>
+<pre><code>▶ Load data  R/pipeline.R:2 load_data()
+├─ ▶ Parse rows  R/pipeline.R:7 parse_rows()
+│  ├─ ℹ 1,200 rows  R/pipeline.R:8 parse_rows()
+│  ├─ ⚠ coerced 3 rows  R/pipeline.R:9 parse_rows()
+│  └─ ⚠ Done  0.00s
+└─ ✔ Done  0.01s</code></pre>
+<p>Each <code>file:line</code> is one hyperlink rather than two pieces
+of text: the location is styled and linked as a unit, so clicking it
+opens that file at that line in a terminal that supports OSC 8 links,
+and is inert plain text in one that does not.</p>
+<p><strong>Capturing and printing are separate stages, and only printing
+can be decided afterwards</strong> – once a run is over its frame stack
+is gone. That is what <code>capture</code> is for:
+<code>capture = TRUE</code> records a call site on every line whatever
+<code>show</code> prints, so a tree that stays exactly as quiet as it
+was can still hand locations to the digest or a JSON sink.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="fu">list</span>(<span class="at">trace =</span> <span class="fu">list</span>(<span class="at">show =</span> <span class="cn">FALSE</span>, <span class="at">capture =</span> <span class="cn">TRUE</span>)))</span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">job</span>()                            <span class="co"># tree unchanged, not one call site printed</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="fu">logtree_summary</span>(<span class="at">trace =</span> <span class="cn">TRUE</span>)    <span class="co"># ... but the digest has them</span></span></code></pre></div>
+<p>Styling the column, and pinning it per sink, are covered in the <a href="https://IvanSortino.github.io/logtree/articles/themes.html">Themes
+cookbook</a>.</p>
+<p><strong>Reference:</strong> <code>logtree_theme()</code>,
+<code>logtree_summary()</code></p>
+</div>
+<div id="timestamps" class="section level2">
+<h2>Timestamps</h2>
+<p>A tree says how <em>long</em> each step took, but not <em>when</em>
+any of it happened – which starts to matter once a log is read after the
+fact rather than watched as it runs. The <code>timestamp</code> slot
+puts a wall-clock column in front of every line. It is off in every
+preset (<code>format = NULL</code>), so it costs nothing until asked
+for.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="fu">list</span>(<span class="at">timestamp =</span> <span class="fu">list</span>(<span class="at">format =</span> <span class="st">&quot;%H:%M:%S&quot;</span>)))</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; 12:13:41 ▶ Pipeline</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; 12:13:41 ├─ ▶ Load config</span></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a><span class="co">#&gt; 12:13:41 │  ├─ ℹ reading config.yml</span></span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="co">#&gt; 12:13:41 │  ├─ ✔ validated 12 parameters</span></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co">#&gt; 12:13:41 │  └─ ✔ Done  0.00s</span></span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="co">#&gt; 12:13:41 └─ ✔ Done  0.00s</span></span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="fu">list</span>(<span class="at">timestamp =</span> <span class="fu">list</span>(<span class="at">format =</span> <span class="cn">NULL</span>)))</span></code></pre></div>
+<p><code>&quot;%H:%M:%S&quot;</code> is the interactive choice;
+<code>&quot;%Y-%m-%d %H:%M:%S&quot;</code> is what a saved log wants, since a file
+outlives the day it was written.</p>
+<p>In the coloured presets the column ships <code>&quot;silver&quot;</code>: it is
+supporting detail, so it stays faint enough that the status glyphs
+remain what your eye lands on.</p>
+<p align="center">
+<img role="img" aria-label="A logtree tree with a silver wall-clock timestamp column in front of every line" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NDQgMTc4IiB3aWR0aD0iNzQ0IiBoZWlnaHQ9IjE3OCIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJsb2d0cmVlIGNvbnNvbGUgb3V0cHV0IHdpdGggYSBzaWx2ZXIgd2FsbC1jbG9jayB0aW1lc3RhbXAgY29sdW1uIj4KPHRpdGxlPmxvZ3RyZWUgdGltZXN0YW1wIGNvbHVtbjwvdGl0bGU+CjxyZWN0IHg9IjAuNSIgeT0iMC41IiB3aWR0aD0iNzQzIiBoZWlnaHQ9IjE3NyIgcng9IjgiIGZpbGw9IiNmZmZmZmYiIHN0cm9rZT0iI2QwZDdkZSIvPgo8ZyBzdHJva2UtbGluZWNhcD0icm91bmQiPgo8bGluZSB4MT0iMTE4LjEyIiB5MT0iNzMuMDAiIHgyPSIxMTguMTIiIHkyPSIxMjAuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iOTQuNTciIHkxPSIzNS4wMCIgeDI9Ijk0LjU3IiB5Mj0iMTM5LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9Ijk0LjU3IiB5MT0iNDQuNTAiIHgyPSIxMDYuMzUiIHkyPSI0NC41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSI5NC41NyIgeTE9IjYzLjUwIiB4Mj0iMTA2LjM1IiB5Mj0iNjMuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iMTE4LjEyIiB5MT0iODIuNTAiIHgyPSIxMjkuOTAiIHkyPSI4Mi41MCIgc3Ryb2tlPSIjOGI5NDllIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxsaW5lIHgxPSIxMTguMTIiIHkxPSIxMDEuNTAiIHgyPSIxMjkuOTAiIHkyPSIxMDEuNTAiIHN0cm9rZT0iIzhiOTQ5ZSIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8bGluZSB4MT0iMTE4LjEyIiB5MT0iMTIwLjUwIiB4Mj0iMTI5LjkwIiB5Mj0iMTIwLjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPGxpbmUgeDE9Ijk0LjU3IiB5MT0iMTM5LjUwIiB4Mj0iMTA2LjM1IiB5Mj0iMTM5LjUwIiBzdHJva2U9IiM4Yjk0OWUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9nPgo8ZyBmb250LWZhbWlseT0idWktbW9ub3NwYWNlLCBTRk1vbm8tUmVndWxhciwgJnF1b3Q7U0YgTW9ubyZxdW90OywgTWVubG8sIENvbnNvbGFzLCBtb25vc3BhY2UiIGZvbnQtc2l6ZT0iMTMiPgo8dGV4dCB4PSIyMC4wMCIgeT0iMjkiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjOGI5NDllIj4wMjoxNDoxMDwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiA8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iOTAuNjUiIHk9IjI5IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFiN2M4MyI+4pa2PC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IE5pZ2h0bHkgRVRMPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjIwLjAwIiB5PSI0OCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiM4Yjk0OWUiPjAyOjE0OjEwPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSIxMTQuMjAiIHk9IjQ4IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzA5NjlkYSI+4oS5PC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IGNvbmZpZyBsb2FkZWQgZnJvbSBldGwueW1sPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjIwLjAwIiB5PSI2NyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiM4Yjk0OWUiPjAyOjE0OjExPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSIxMTQuMjAiIHk9IjY3IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFiN2M4MyI+4pa2PC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IEV4dHJhY3Q8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iMjAuMDAiIHk9Ijg2IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzhiOTQ5ZSI+MDI6MTQ6MTE8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjEzNy43NSIgeT0iODYiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMDk2OWRhIj7ihLk8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gMjQsMzE4IHJvd3MgcHVsbGVkPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjIwLjAwIiB5PSIxMDUiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjOGI5NDllIj4wMjoxNDoxMTwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiA8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iMTM3Ljc1IiB5PSIxMDUiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gc3RhZ2VkIHRvIHdhcmVob3VzZTwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSIyMC4wMCIgeT0iMTI0IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzhiOTQ5ZSI+MDI6MTQ6MTQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjEzNy43NSIgeT0iMTI0IiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IERvbmUgIDMuNjBzPC90c3Bhbj48L3RleHQ+Cjx0ZXh0IHg9IjIwLjAwIiB5PSIxNDMiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjOGI5NDllIj4wMjoxNDoxNjwvdHNwYW4+PHRzcGFuIGZpbGw9IiMyNDI5MmYiPiA8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iMTE0LjIwIiB5PSIxNDMiIHhtbDpzcGFjZT0icHJlc2VydmUiPjx0c3BhbiBmaWxsPSIjMWE3ZjM3Ij7inJQ8L3RzcGFuPjx0c3BhbiBmaWxsPSIjMjQyOTJmIj4gRG9uZSAgNS42MHM8L3RzcGFuPjwvdGV4dD4KPHRleHQgeD0iMjAuMDAiIHk9IjE2MiIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+PHRzcGFuIGZpbGw9IiM4Yjk0OWUiPjAyOjE0OjE2PC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IDwvdHNwYW4+PC90ZXh0Pgo8dGV4dCB4PSI5MC42NSIgeT0iMTYyIiB4bWw6c3BhY2U9InByZXNlcnZlIj48dHNwYW4gZmlsbD0iIzFhN2YzNyI+4pyUPC90c3Bhbj48dHNwYW4gZmlsbD0iIzI0MjkyZiI+IFJ1biBjb21wbGV0ZSBpbiA5LjEwczwvdHNwYW4+PC90ZXh0Pgo8L2c+CjxnIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLCBCbGlua01hY1N5c3RlbUZvbnQsICZxdW90O1NlZ29lIFVJJnF1b3Q7LCBIZWx2ZXRpY2EsIEFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjExIj4KPGxpbmUgeDE9IjIwMC43MCIgeTE9IjI1LjUwIiB4Mj0iMzg0LjAwIiB5Mj0iMjUuNTAiIHN0cm9rZT0iI2QwZDdkZSIgc3Ryb2tlLXdpZHRoPSIxIiBzdHJva2UtZGFzaGFycmF5PSIxIDMiLz4KPGNpcmNsZSBjeD0iMzg4LjAwIiBjeT0iMjUuNTAiIHI9IjIiIGZpbGw9IiM4Yjk0OWUiLz4KPHRleHQgeD0iMzk0LjAwIiB5PSIyOS4xNyIgZmlsbD0iIzhiOTQ5ZSI+dGhlIHRpbWVzdGFtcCBjb2x1bW4sIHNpbHZlciBieSBkZWZhdWx0PC90ZXh0Pgo8bGluZSB4MT0iMzAyLjc1IiB5MT0iODIuNTAiIHgyPSIzODQuMDAiIHkyPSI4Mi41MCIgc3Ryb2tlPSIjZDBkN2RlIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjEgMyIvPgo8Y2lyY2xlIGN4PSIzODguMDAiIGN5PSI4Mi41MCIgcj0iMiIgZmlsbD0iIzhiOTQ5ZSIvPgo8dGV4dCB4PSIzOTQuMDAiIHk9Ijg2LjE3IiBmaWxsPSIjOGI5NDllIj5ldmVyeSBsaW5lIGtpbmQgY2FycmllcyBpdCwgYXQgb25lIGZpeGVkIGxlZnQgZWRnZTwvdGV4dD4KPGxpbmUgeDE9IjMxMC42MCIgeTE9IjEwMS41MCIgeDI9IjM4NC4wMCIgeTI9IjEwMS41MCIgc3Ryb2tlPSIjZDBkN2RlIiBzdHJva2Utd2lkdGg9IjEiIHN0cm9rZS1kYXNoYXJyYXk9IjEgMyIvPgo8Y2lyY2xlIGN4PSIzODguMDAiIGN5PSIxMDEuNTAiIHI9IjIiIGZpbGw9IiMxYTdmMzciLz4KPHRleHQgeD0iMzk0LjAwIiB5PSIxMDUuMTciIGZpbGw9IiMxYTdmMzciPnRoZSBzdGFtcCBzYXlzIHdoZW4g4oCUIHRoZSBlbGFwc2VkIGNvbHVtbiBzYXlzIGhvdyBsb25nPC90ZXh0Pgo8bGluZSB4MT0iMjc5LjIwIiB5MT0iMTU4LjUwIiB4Mj0iMzg0LjAwIiB5Mj0iMTU4LjUwIiBzdHJva2U9IiNkMGQ3ZGUiIHN0cm9rZS13aWR0aD0iMSIgc3Ryb2tlLWRhc2hhcnJheT0iMSAzIi8+CjxjaXJjbGUgY3g9IjM4OC4wMCIgY3k9IjE1OC41MCIgcj0iMiIgZmlsbD0iIzFhN2YzNyIvPgo8dGV4dCB4PSIzOTQuMDAiIHk9IjE2Mi4xNyIgZmlsbD0iIzFhN2YzNyI+dGhlIHJ1biBzdW1tYXJ5IGxpbmUgaXMgc3RhbXBlZCB0b288L3RleHQ+CjwvZz4KPC9zdmc+Cgo=" alt="A logtree tree with a silver wall-clock timestamp column in front of every line" width="740" />
+</p>
+<p>Every line kind takes the column at one fixed left edge, and the
+width is measured from a rendered sample rather than from the format
+string, so a format whose width varies with the value cannot shear the
+tree. The digest is never stamped – it replays events that already
+happened, so the time it was printed would be the wrong answer.</p>
+<p><strong>Reference:</strong> <code>logtree_theme()</code>,
+<code>logtree_sink_file()</code></p>
+</div>
+<div id="themes-and-presets" class="section level2">
+<h2>Themes and presets</h2>
+<p><code>logtree_theme()</code> swaps the whole glyph and colour preset.
+There are five:</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Preset</th>
+<th>What it is for</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>&quot;unicode&quot;</code></td>
+<td>The default. Box-drawing connectors, coloured symbol glyphs, for an
+interactive terminal.</td>
+</tr>
+<tr class="even">
+<td><code>&quot;ascii&quot;</code></td>
+<td>Plain ASCII, no colour. Safe for log files and non-UTF-8 terminals;
+also what every text file sink renders through.</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;emoji&quot;</code></td>
+<td>Emoji status glyphs (width-2 cells) over box-drawing
+connectors.</td>
+</tr>
+<tr class="even">
+<td><code>&quot;minimal&quot;</code></td>
+<td>No connectors at all – depth is carried by indentation alone.</td>
+</tr>
+<tr class="odd">
+<td><code>&quot;ci&quot;</code></td>
+<td>Bracketed word glyphs over pure-ASCII connectors, no colour, so a
+failure greps as <code>[fail]</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;ascii&quot;</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="co">#&gt; &gt; Pipeline</span></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co">#&gt; |- &gt; Load config</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a><span class="co">#&gt; |  |- i reading config.yml</span></span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a><span class="co">#&gt; |  |- + validated 12 parameters</span></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a><span class="co">#&gt; |  |- + Done  0.00s</span></span>
+<span id="cb21-8"><a href="#cb21-8" tabindex="-1"></a><span class="co">#&gt; |- + Done  0.00s</span></span>
+<span id="cb21-9"><a href="#cb21-9" tabindex="-1"></a></span>
+<span id="cb21-10"><a href="#cb21-10" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;ci&quot;</span>)</span>
+<span id="cb21-11"><a href="#cb21-11" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb21-12"><a href="#cb21-12" tabindex="-1"></a><span class="co">#&gt; [step]  Pipeline</span></span>
+<span id="cb21-13"><a href="#cb21-13" tabindex="-1"></a><span class="co">#&gt; |- [step]  Load config</span></span>
+<span id="cb21-14"><a href="#cb21-14" tabindex="-1"></a><span class="co">#&gt; |  |- [info]  reading config.yml</span></span>
+<span id="cb21-15"><a href="#cb21-15" tabindex="-1"></a><span class="co">#&gt; |  |- [ok]    validated 12 parameters</span></span>
+<span id="cb21-16"><a href="#cb21-16" tabindex="-1"></a><span class="co">#&gt; |  \- [done]  0.00s</span></span>
+<span id="cb21-17"><a href="#cb21-17" tabindex="-1"></a><span class="co">#&gt; \- [done]  0.00s</span></span>
+<span id="cb21-18"><a href="#cb21-18" tabindex="-1"></a></span>
+<span id="cb21-19"><a href="#cb21-19" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
+<p>Individual slots are overridden with <code>overrides</code>, a named
+list keyed by slot, each element holding only the fields to change:</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>, <span class="at">overrides =</span> <span class="fu">list</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a>  <span class="at">success =</span> <span class="fu">list</span>(<span class="at">glyph =</span> <span class="st">&quot;*&quot;</span>, <span class="at">color =</span> <span class="fu">c</span>(<span class="st">&quot;green&quot;</span>, <span class="st">&quot;bold&quot;</span>)),</span>
+<span id="cb22-3"><a href="#cb22-3" tabindex="-1"></a>  <span class="at">done    =</span> <span class="fu">list</span>(<span class="at">text =</span> <span class="st">&quot;{label} ok&quot;</span>)</span>
+<span id="cb22-4"><a href="#cb22-4" tabindex="-1"></a>))</span>
+<span id="cb22-5"><a href="#cb22-5" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb22-6"><a href="#cb22-6" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
+<span id="cb22-7"><a href="#cb22-7" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
+<span id="cb22-8"><a href="#cb22-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ reading config.yml</span></span>
+<span id="cb22-9"><a href="#cb22-9" tabindex="-1"></a><span class="co">#&gt; │  ├─ * validated 12 parameters</span></span>
+<span id="cb22-10"><a href="#cb22-10" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Load config ok  0.00s</span></span>
+<span id="cb22-11"><a href="#cb22-11" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Pipeline ok  0.00s</span></span>
+<span id="cb22-12"><a href="#cb22-12" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
+<p>Switching themes never breaks column alignment, because each glyph
+declares its own rendered width rather than having it measured –
+<code>nchar()</code> cannot reliably size an emoji cell.</p>
+<p>The full list of slots and fields, the elapsed-time controls,
+close-line text templating, and recipes for building your own preset are
+in the <a href="https://IvanSortino.github.io/logtree/articles/themes.html">Themes
+cookbook</a>.</p>
+<p><strong>Reference:</strong> <code>logtree_theme()</code></p>
+</div>
+<div id="layout-and-density" class="section level2">
+<h2>Layout and density</h2>
+<p>Four arguments control horizontal space, independently of any glyph.
+They are scalars carried on the theme, set through
+<code>logtree_theme()</code>’s own arguments rather than through
+<code>overrides</code>, and cleared by the next preset swap.</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Argument</th>
+<th>The gap it sets</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>compact</code></td>
+<td>the per-level tree column: <code>&quot;medium&quot;</code> drops the trailing
+gap after each connector, <code>&quot;tight&quot;</code> also slims the connectors
+to one character</td>
+</tr>
+<tr class="even">
+<td><code>connector_gap</code></td>
+<td>a leaf or close line’s own connector, to its status glyph</td>
+</tr>
+<tr class="odd">
+<td><code>glyph_gap</code></td>
+<td>the status glyph, to the message text</td>
+</tr>
+<tr class="even">
+<td><code>wrap</code></td>
+<td>the column budget a rendered line is capped at</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>, <span class="at">compact =</span> <span class="st">&quot;tight&quot;</span>, <span class="at">glyph_gap =</span> <span class="dv">0</span>)</span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a><span class="co">#&gt; ▶Pipeline</span></span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a><span class="co">#&gt; ├▶Load config</span></span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a><span class="co">#&gt; │├ℹreading config.yml</span></span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a><span class="co">#&gt; │├✔validated 12 parameters</span></span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a><span class="co">#&gt; │└✔Done  0.00s</span></span>
+<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a><span class="co">#&gt; └✔Done  0.00s</span></span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
+<p><code>wrap = TRUE</code> follows <code>cli::console_width()</code>,
+measured at render time so a terminal resized mid-run is picked up on
+its own; a number pins a fixed width. Continuation lines indent to the
+message column and carry the rails down, so a wrapped message still
+reads as one node:</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>, <span class="at">wrap =</span> <span class="dv">56</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a>long <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb24-4"><a href="#cb24-4" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Deploy&quot;</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" tabindex="-1"></a>  <span class="fu">log_info</span>(<span class="st">&quot;uploading layers to registry.example.internal, 412 MB across 14 layers&quot;</span>)</span>
+<span id="cb24-6"><a href="#cb24-6" tabindex="-1"></a>}</span>
+<span id="cb24-7"><a href="#cb24-7" tabindex="-1"></a><span class="fu">long</span>()</span>
+<span id="cb24-8"><a href="#cb24-8" tabindex="-1"></a><span class="co">#&gt; ▶ Deploy</span></span>
+<span id="cb24-9"><a href="#cb24-9" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ uploading layers to registry.example.internal, 412</span></span>
+<span id="cb24-10"><a href="#cb24-10" tabindex="-1"></a><span class="co">#&gt; │    MB across 14 layers</span></span>
+<span id="cb24-11"><a href="#cb24-11" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb24-12"><a href="#cb24-12" tabindex="-1"></a></span>
+<span id="cb24-13"><a href="#cb24-13" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="st">&quot;unicode&quot;</span>)</span></code></pre></div>
+<p>None of the four reaches file sinks, which render through the ascii
+preset with its built-in spacing.</p>
+<p><strong>Reference:</strong> <code>logtree_theme()</code></p>
+</div>
+<div id="output-sinks" class="section level2">
+<h2>Output sinks</h2>
+<p>Every logged event fans out to every registered sink. The console
+sink is registered by default under the reserved id
+<code>&quot;console&quot;</code>; <code>logtree_sink_file()</code> adds a
+file.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a>log_path <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.log&quot;</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>handle <span class="ot">&lt;-</span> <span class="fu">logtree_sink_file</span>(log_path, <span class="at">format =</span> <span class="st">&quot;text&quot;</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
+<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ reading config.yml</span></span>
+<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ validated 12 parameters</span></span>
+<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb25-12"><a href="#cb25-12" tabindex="-1"></a></span>
+<span id="cb25-13"><a href="#cb25-13" tabindex="-1"></a><span class="fu">writeLines</span>(<span class="fu">readLines</span>(log_path))</span>
+<span id="cb25-14"><a href="#cb25-14" tabindex="-1"></a><span class="co">#&gt; &gt; Pipeline</span></span>
+<span id="cb25-15"><a href="#cb25-15" tabindex="-1"></a><span class="co">#&gt; |- &gt; Load config</span></span>
+<span id="cb25-16"><a href="#cb25-16" tabindex="-1"></a><span class="co">#&gt; |  |- i reading config.yml</span></span>
+<span id="cb25-17"><a href="#cb25-17" tabindex="-1"></a><span class="co">#&gt; |  |- + validated 12 parameters</span></span>
+<span id="cb25-18"><a href="#cb25-18" tabindex="-1"></a><span class="co">#&gt; |  |- + Done  0.00s</span></span>
+<span id="cb25-19"><a href="#cb25-19" tabindex="-1"></a><span class="co">#&gt; |- + Done  0.00s</span></span></code></pre></div>
+<p><code>format = &quot;json&quot;</code> writes NDJSON instead – one record per
+line, with the event kind, level, depth, label, status, elapsed time, an
+ISO-8601 timestamp, and a <code>run_id</code> so one run’s lines can be
+picked out of a file many runs appended to.</p>
+<p>Every registration returns a handle. Sinks deliberately survive
+<code>logtree_reset()</code> – they are configuration, not run state –
+so <code>logtree_sink_remove()</code> is the only way to stop one:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a><span class="fu">logtree_sinks</span>()</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;console&quot; &quot;sink1&quot;</span></span>
+<span id="cb26-3"><a href="#cb26-3" tabindex="-1"></a><span class="fu">logtree_sink_remove</span>(handle)</span>
+<span id="cb26-4"><a href="#cb26-4" tabindex="-1"></a><span class="fu">logtree_sinks</span>()</span>
+<span id="cb26-5"><a href="#cb26-5" tabindex="-1"></a><span class="co">#&gt; [1] &quot;console&quot;</span></span></code></pre></div>
+<p><code>logtree_sink()</code> registers a sink of your own: any
+function of one argument, called with each event. A sink that throws is
+skipped rather than allowed to break the fanout – the remaining sinks
+still run, and a warning naming the offender is raised once.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>kinds <span class="ot">&lt;-</span> <span class="fu">character</span>(<span class="dv">0</span>)</span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="fu">logtree_sink</span>(<span class="cf">function</span>(event) kinds <span class="ot">&lt;&lt;-</span> <span class="fu">c</span>(kinds, event<span class="sc">$</span>kind))</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb27-5"><a href="#cb27-5" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb27-6"><a href="#cb27-6" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
+<span id="cb27-7"><a href="#cb27-7" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
+<span id="cb27-8"><a href="#cb27-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ reading config.yml</span></span>
+<span id="cb27-9"><a href="#cb27-9" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ validated 12 parameters</span></span>
+<span id="cb27-10"><a href="#cb27-10" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb27-11"><a href="#cb27-11" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb27-12"><a href="#cb27-12" tabindex="-1"></a><span class="fu">table</span>(kinds)</span>
+<span id="cb27-13"><a href="#cb27-13" tabindex="-1"></a><span class="co">#&gt; kinds</span></span>
+<span id="cb27-14"><a href="#cb27-14" tabindex="-1"></a><span class="co">#&gt; close  leaf  open </span></span>
+<span id="cb27-15"><a href="#cb27-15" tabindex="-1"></a><span class="co">#&gt;     2     2     2</span></span>
+<span id="cb27-16"><a href="#cb27-16" tabindex="-1"></a></span>
+<span id="cb27-17"><a href="#cb27-17" tabindex="-1"></a><span class="fu">logtree_sink_remove</span>(h)</span></code></pre></div>
+<p>Each sink takes its own <code>threshold =</code>, defaulting to the
+global <code>logtree_threshold()</code> read afresh per event. This is
+how a log file captures debug detail while the console stays at
+<code>&quot;info&quot;</code>:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a>verbose_path <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="at">fileext =</span> <span class="st">&quot;.log&quot;</span>)</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="fu">logtree_sink_file</span>(verbose_path, <span class="at">format =</span> <span class="st">&quot;text&quot;</span>, <span class="at">threshold =</span> <span class="st">&quot;debug&quot;</span>)</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a><span class="fu">fetch_verbose</span>()          <span class="co"># console: no debug line</span></span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a><span class="co">#&gt; ▶ Fetch</span></span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ connecting to API</span></span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ fetched 12 records</span></span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb28-10"><a href="#cb28-10" tabindex="-1"></a></span>
+<span id="cb28-11"><a href="#cb28-11" tabindex="-1"></a><span class="fu">writeLines</span>(<span class="fu">readLines</span>(verbose_path))   <span class="co"># file: it is there</span></span>
+<span id="cb28-12"><a href="#cb28-12" tabindex="-1"></a><span class="co">#&gt; &gt; Fetch</span></span>
+<span id="cb28-13"><a href="#cb28-13" tabindex="-1"></a><span class="co">#&gt; |- d cache miss for key user:42</span></span>
+<span id="cb28-14"><a href="#cb28-14" tabindex="-1"></a><span class="co">#&gt; |- i connecting to API</span></span>
+<span id="cb28-15"><a href="#cb28-15" tabindex="-1"></a><span class="co">#&gt; |- + fetched 12 records</span></span>
+<span id="cb28-16"><a href="#cb28-16" tabindex="-1"></a><span class="co">#&gt; |- + Done  0.00s</span></span>
+<span id="cb28-17"><a href="#cb28-17" tabindex="-1"></a><span class="fu">logtree_sink_remove</span>(h)</span></code></pre></div>
+<p>File sinks also take <code>trace =</code> and
+<code>timestamp =</code>, pinning those columns independently of the
+console’s.</p>
+<p><strong>Reference:</strong> <code>logtree_sink_file()</code>,
+<code>logtree_sink()</code>, <code>logtree_sinks()</code>,
+<code>logtree_sink_remove()</code> · <strong>Examples:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#a-ci-build-log">A
+CI build log</a>, <a href="https://IvanSortino.github.io/logtree/articles/examples.html#structured-ndjson">Structured
+NDJSON</a></p>
+</div>
+<div id="testing-your-logging" class="section level2">
+<h2>Testing your logging</h2>
+<p>If your package logs with logtree, you will eventually want to assert
+that a pipeline logged what it should. Capturing console output and
+pattern-matching glyphs and connectors is the wrong tool – it breaks
+when the theme changes and it tests the renderer rather than your
+code.</p>
+<p><code>logtree_sink_memory()</code> collects events in a capped
+buffer, and <code>logtree_sink_memory_events()</code> reads them back as
+a data frame, one row per event, with the same columns a JSON sink
+writes:</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a>h <span class="ot">&lt;-</span> <span class="fu">logtree_sink_memory</span>()</span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a><span class="co">#&gt; ▶ Pipeline</span></span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a><span class="co">#&gt; ├─ ▶ Load config</span></span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ reading config.yml</span></span>
+<span id="cb29-8"><a href="#cb29-8" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ validated 12 parameters</span></span>
+<span id="cb29-9"><a href="#cb29-9" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
+<span id="cb29-10"><a href="#cb29-10" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb29-11"><a href="#cb29-11" tabindex="-1"></a></span>
+<span id="cb29-12"><a href="#cb29-12" tabindex="-1"></a>events <span class="ot">&lt;-</span> <span class="fu">logtree_sink_memory_events</span>(h)</span>
+<span id="cb29-13"><a href="#cb29-13" tabindex="-1"></a>events[, <span class="fu">c</span>(<span class="st">&quot;level&quot;</span>, <span class="st">&quot;depth&quot;</span>, <span class="st">&quot;label&quot;</span>, <span class="st">&quot;status&quot;</span>)]</span>
+<span id="cb29-14"><a href="#cb29-14" tabindex="-1"></a><span class="co">#&gt;   level depth                   label  status</span></span>
+<span id="cb29-15"><a href="#cb29-15" tabindex="-1"></a><span class="co">#&gt; 1  open     1                Pipeline    step</span></span>
+<span id="cb29-16"><a href="#cb29-16" tabindex="-1"></a><span class="co">#&gt; 2  open     2             Load config    step</span></span>
+<span id="cb29-17"><a href="#cb29-17" tabindex="-1"></a><span class="co">#&gt; 3  leaf     2      reading config.yml    info</span></span>
+<span id="cb29-18"><a href="#cb29-18" tabindex="-1"></a><span class="co">#&gt; 4  leaf     2 validated 12 parameters success</span></span>
+<span id="cb29-19"><a href="#cb29-19" tabindex="-1"></a><span class="co">#&gt; 5 close     2             Load config success</span></span>
+<span id="cb29-20"><a href="#cb29-20" tabindex="-1"></a><span class="co">#&gt; 6 close     1                Pipeline success</span></span>
+<span id="cb29-21"><a href="#cb29-21" tabindex="-1"></a></span>
+<span id="cb29-22"><a href="#cb29-22" tabindex="-1"></a><span class="fu">logtree_sink_remove</span>(h)</span></code></pre></div>
+<p>Note the column names, since they are easy to guess wrong:
+<code>level</code> is the kind of event (<code>&quot;open&quot;</code>,
+<code>&quot;leaf&quot;</code>, <code>&quot;close&quot;</code>, <code>&quot;group&quot;</code>,
+<code>&quot;group_close&quot;</code>) and <code>status</code> is its outcome
+(<code>&quot;step&quot;</code>, <code>&quot;info&quot;</code>, <code>&quot;success&quot;</code>,
+<code>&quot;warning&quot;</code>, …). The full set is <code>ts</code>,
+<code>run_id</code>, <code>level</code>, <code>id</code>,
+<code>parent_id</code>, <code>depth</code>, <code>label</code>,
+<code>elapsed</code>, <code>status</code>, <code>fn</code>,
+<code>file</code>, <code>line</code>. A sink function registered with
+<code>logtree_sink()</code> receives a different shape – an event
+<em>list</em>, whose kind is <code>event$kind</code>.</p>
+<p>Both views are built from one shared record, so a run replayed from a
+log file and the same run read from memory cannot disagree.</p>
+<p><strong>Reference:</strong> <code>logtree_sink_memory()</code>,
+<code>logtree_sink_memory_events()</code> · <strong>Example:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#asserting-in-tests">Asserting
+in tests</a></p>
+</div>
+<div id="silence" class="section level2">
+<h2>Silence</h2>
+<p><code>logtree_mute()</code> stops every sink receiving events without
+unregistering any of them – what a library that logs with logtree
+reaches for to keep its own test suite quiet.
+<code>logtree_unmute()</code> turns it back on, and both return the
+state they replaced, so a caller can restore what it found.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a>was <span class="ot">&lt;-</span> <span class="fu">logtree_mute</span>()</span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a><span class="fu">pipeline</span>()          <span class="co"># prints nothing</span></span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" tabindex="-1"></a><span class="fu">logtree_unmute</span>()</span>
+<span id="cb30-7"><a href="#cb30-7" tabindex="-1"></a><span class="fu">length</span>(<span class="fu">logtree_summary</span>())</span>
+<span id="cb30-8"><a href="#cb30-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb30-9"><a href="#cb30-9" tabindex="-1"></a><span class="co">#&gt; ── Summary: nothing to report ──────────────────────────────────────────────────</span></span>
+<span id="cb30-10"><a href="#cb30-10" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+<p>A muted run is still <em>recorded</em>: the digest can still report
+what went wrong, and step bookkeeping is untouched, so depth is right
+the moment output comes back.</p>
+<p><strong>Reference:</strong> <code>logtree_mute()</code></p>
+</div>
+<div id="logger-integration" class="section level2">
+<h2>logger integration</h2>
+<p>If your codebase already uses the CRAN <a href="https://daroczig.github.io/logger/">logger</a> package,
+<code>logtree_logger()</code> routes those calls through logtree without
+rewriting any of them. Call it once near the top of your script: it
+registers logtree’s layout, pairs it with
+<code>logger::appender_void</code> so logtree does the rendering, and
+opens logger’s own threshold so <code>logtree_threshold()</code> becomes
+the single gate.</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;debug&quot;</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a>ns <span class="ot">&lt;-</span> <span class="st">&quot;my_app&quot;</span></span>
+<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a><span class="fu">logtree_logger</span>(<span class="at">namespace =</span> ns)</span>
+<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" tabindex="-1"></a>process_data <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb31-8"><a href="#cb31-8" tabindex="-1"></a>  <span class="fu">log_step</span>(<span class="st">&quot;Processing data&quot;</span>)</span>
+<span id="cb31-9"><a href="#cb31-9" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_info</span>(<span class="st">&quot;reading input file&quot;</span>, <span class="at">namespace =</span> ns)</span>
+<span id="cb31-10"><a href="#cb31-10" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_debug</span>(<span class="st">&quot;parsed 5,000 rows&quot;</span>, <span class="at">namespace =</span> ns)</span>
+<span id="cb31-11"><a href="#cb31-11" tabindex="-1"></a>  logger<span class="sc">::</span><span class="fu">log_success</span>(<span class="st">&quot;transformation complete&quot;</span>, <span class="at">namespace =</span> ns)</span>
+<span id="cb31-12"><a href="#cb31-12" tabindex="-1"></a>}</span>
+<span id="cb31-13"><a href="#cb31-13" tabindex="-1"></a></span>
+<span id="cb31-14"><a href="#cb31-14" tabindex="-1"></a><span class="fu">process_data</span>()</span>
+<span id="cb31-15"><a href="#cb31-15" tabindex="-1"></a><span class="co">#&gt; ▶ Processing data</span></span>
+<span id="cb31-16"><a href="#cb31-16" tabindex="-1"></a><span class="co">#&gt; ├─ ℹ reading input file</span></span>
+<span id="cb31-17"><a href="#cb31-17" tabindex="-1"></a><span class="co">#&gt; ├─ ⚙ parsed 5,000 rows</span></span>
+<span id="cb31-18"><a href="#cb31-18" tabindex="-1"></a><span class="co">#&gt; ├─ ✔ transformation complete</span></span>
+<span id="cb31-19"><a href="#cb31-19" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span>
+<span id="cb31-20"><a href="#cb31-20" tabindex="-1"></a><span class="fu">logtree_threshold</span>(<span class="st">&quot;info&quot;</span>)</span></code></pre></div>
+<p>Severities map onto leaf levels:
+<code>FATAL</code>/<code>ERROR</code> become <code>log_error()</code>,
+<code>WARN</code> becomes <code>log_warn()</code>, <code>SUCCESS</code>
+becomes <code>log_success()</code>, <code>INFO</code> becomes
+<code>log_info()</code>, and <code>DEBUG</code>/<code>TRACE</code> both
+become <code>log_debug()</code> – logger has two debug-ish tiers,
+logtree has one.</p>
+<p><strong>Reference:</strong> <code>logtree_logger()</code>,
+<code>layout_logtree()</code> · <strong>Example:</strong> <a href="https://IvanSortino.github.io/logtree/articles/examples.html#bridging-logger">Bridging
+logger</a></p>
+</div>
+<div id="where-to-go-next" class="section level2">
+<h2>Where to go next</h2>
+<ul>
+<li><a href="https://IvanSortino.github.io/logtree/articles/examples.html">Examples</a>
+– complete end-to-end runs.</li>
+<li><a href="https://IvanSortino.github.io/logtree/articles/themes.html">Themes
+cookbook</a> – every slot and field, and recipes for your own
+preset.</li>
+<li><a href="https://IvanSortino.github.io/logtree/articles/recipes.html">Recipes</a>
+– top-level scripts, library authors, scheduled jobs.</li>
+<li><a href="https://IvanSortino.github.io/logtree/articles/design.html">Design
+philosophy</a> – why depth is tied to frames, and why the corner
+connector only ever appears on a close line.</li>
+</ul>
 </div>
 
 
