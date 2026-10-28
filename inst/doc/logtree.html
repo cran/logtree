@@ -414,7 +414,7 @@ inside the function that opened the outer one.</p>
 <span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt; │  ├─ ℹ reading config.yml</span></span>
 <span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt; │  ├─ ✔ validated 12 parameters</span></span>
 <span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; │  └─ ✔ Done  0.00s</span></span>
-<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.01s</span></span></code></pre></div>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; └─ ✔ Done  0.00s</span></span></code></pre></div>
 <p><code>load_config()</code> does not know it is being called from
 inside a step, and <code>pipeline()</code> does not know that
 <code>load_config()</code> logs. Neither passes the other a depth, an
@@ -1083,12 +1083,12 @@ for.</p>
 <div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="fu">logtree_reset</span>()</span>
 <span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="fu">list</span>(<span class="at">timestamp =</span> <span class="fu">list</span>(<span class="at">format =</span> <span class="st">&quot;%H:%M:%S&quot;</span>)))</span>
 <span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">pipeline</span>()</span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; 12:13:41 ▶ Pipeline</span></span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; 12:13:41 ├─ ▶ Load config</span></span>
-<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a><span class="co">#&gt; 12:13:41 │  ├─ ℹ reading config.yml</span></span>
-<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="co">#&gt; 12:13:41 │  ├─ ✔ validated 12 parameters</span></span>
-<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co">#&gt; 12:13:41 │  └─ ✔ Done  0.00s</span></span>
-<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="co">#&gt; 12:13:41 └─ ✔ Done  0.00s</span></span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co">#&gt; 19:39:07 ▶ Pipeline</span></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co">#&gt; 19:39:07 ├─ ▶ Load config</span></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a><span class="co">#&gt; 19:39:07 │  ├─ ℹ reading config.yml</span></span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="co">#&gt; 19:39:07 │  ├─ ✔ validated 12 parameters</span></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co">#&gt; 19:39:07 │  └─ ✔ Done  0.00s</span></span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="co">#&gt; 19:39:07 └─ ✔ Done  0.00s</span></span>
 <span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a><span class="fu">logtree_theme</span>(<span class="fu">list</span>(<span class="at">timestamp =</span> <span class="fu">list</span>(<span class="at">format =</span> <span class="cn">NULL</span>)))</span></code></pre></div>
 <p><code>&quot;%H:%M:%S&quot;</code> is the interactive choice;
 <code>&quot;%Y-%m-%d %H:%M:%S&quot;</code> is what a saved log wants, since a file

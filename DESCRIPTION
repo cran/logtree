@@ -1,6 +1,6 @@
 Package: logtree
 Title: Tree-Style Console Logger for Nested Processes
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     person("Ivan", "Sortino", , "ivan.sortino97@gmail.com", role = c("aut", "cre", "cph"))
 Description: Render nested process execution as a live, colored tree in the console, with tree connectors, status glyphs, and elapsed time per step. Nesting depth is tracked via frame exit handlers so it never desynchronizes, even when a step errors. Builds on the 'cli' package for console rendering.
@@ -17,8 +17,8 @@ URL: https://github.com/IvanSortino/logtree,
 BugReports: https://github.com/IvanSortino/logtree/issues
 Config/roxygen2/version: 8.1.0
 NeedsCompilation: no
-Packaged: 2026-09-01 10:13:42 UTC; sortino
+Packaged: 2026-10-28 18:39:08 UTC; sortino
 Author: Ivan Sortino [aut, cre, cph]
 Maintainer: Ivan Sortino <ivan.sortino97@gmail.com>
 Repository: CRAN
-Date/Publication: 2026-09-01 10:30:10 UTC
+Date/Publication: 2026-10-28 19:30:02 UTC

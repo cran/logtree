@@ -1,15 +1,15 @@
-d0ade1f53907d8f0bad5ebc6182ebf11 *DESCRIPTION
+229d4d9d094af9b8d68e75a4a912eaaa *DESCRIPTION
 f086a29a90304af7fc5a2f60d08037ed *LICENSE
 76ab6141f60ee7c84aabc888510a69f0 *NAMESPACE
-b75243ec8f3d56ae183497163eb9231d *NEWS.md
+f422cd71dfeef1a108754a616e491e7d *NEWS.md
 f9e0b2a47949e1fa18d22c706291b598 *R/appenders.R
 990ff4f91c7922c1b2ddfaf303d4e05a *R/glyphs.R
 b35650816a01ae4f720118825ac3c2ea *R/leaves.R
 da3e447801987a7dd61cb3ca6f09a3ac *R/logger-integration.R
 df6cc46bc7fae1a55b713f3d5065b35a *R/logtree-package.R
-7b992831f6cabf5d988f77107bc50ffb *R/run.R
+15d4f53ce057111796069bef981eb9b4 *R/run.R
 44c05beae2838568c7ffb98fb8260a3b *R/sinks.R
-cb078fc17054b051f501ce2187872dde *R/state.R
+ef471c6c8e20a5df6c54b3d7542bd908 *R/state.R
 c1c37f6782c11e2236a821aa08b31598 *R/step.R
 e6c2116cb6c99ad6af91f1284c944fc8 *R/summary.R
 e4e6e2a3c2f9674b58b46a0b3749830d *R/theme.R
@@ -19,7 +19,7 @@ e4e6e2a3c2f9674b58b46a0b3749830d *R/theme.R
 939570e32eca6af9e2fe9bffe6c8601f *build/vignette.rds
 837598333e5dc26a4778948a09720c3b *inst/doc/logtree.R
 5ec520e5f8fdf9a57a51350d7cdb0f61 *inst/doc/logtree.Rmd
-98efd465df9bf2f695da07c71eb42f43 *inst/doc/logtree.html
+85845a65c1dc0f270d39604ac910db69 *inst/doc/logtree.html
 6282a6e171edd467f55651ccef1e8110 *man/figures/README-tree-color.svg
 362d13c631b4b3b9b2a0677e2affb506 *man/figures/logo.png
 131401ba0bc6cc953d0dcaac03281728 *man/layout_logtree.Rd
@@ -44,7 +44,7 @@ bd7c3964e3990b48f3dcb19fcdf582e7 *man/logtree_sinks.Rd
 90cbe0a8b1b6065e638a764a2d1419d2 *man/logtree_summary.Rd
 6650938ac186e075c4bdf1dc0f578c76 *man/logtree_theme.Rd
 6b1fdcb67ccd5e8a6fe3e7afe090eb17 *man/logtree_threshold.Rd
-8a3c5ec488e9c82725adb12353a919b3 *man/with_logging.Rd
+f322d7c0de7272f13841fbb56717d441 *man/with_logging.Rd
 71f88d59fa20ce0e3fb54bf84b37d511 *tests/testthat.R
 c9073c65156486f4af17797e524db98e *tests/testthat/_snaps/close-text.md
 641dd8efc4d9b2d45281f3b106d63930 *tests/testthat/_snaps/compact.md
@@ -93,7 +93,7 @@ ea990bb3977e499279ee329e5475d6a5 *tests/testthat/test-status-elevation.R
 f9d11e2121fb54d18cbd206312510eb1 *tests/testthat/test-trace.R
 a119be7395598db0ff369447fcf7bd90 *tests/testthat/test-verbosity.R
 43060cd048cfa8e27564bc7e3a7be895 *tests/testthat/test-warnings.R
-67b10c837c4fcb56fecd15c98a26da65 *tests/testthat/test-with-logging.R
+5c34095fbb11c01a69ec8de8ba0f17fc *tests/testthat/test-with-logging.R
 141dd9e30eaf93bd69040fdc1429ec4a *tests/testthat/test-wrap.R
 e2d02b635ecc3479724d409533fe5cca *vignettes/concept-anatomy.svg
 bc3e69bdc69bff76ea758bc70a57d8cd *vignettes/concept-elevation.svg
